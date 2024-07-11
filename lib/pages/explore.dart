@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_e_commerce_app/pages/product_view.dart';
@@ -35,12 +36,14 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   int _selectedSize = 1;
 
   var selectedRange = RangeValues(150.00, 1500.00);
+  
+  CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
 
   @override
   void initState() { 
     _scrollController = ScrollController();
     _scrollController.addListener(_listenToScrollChange);
-    products();
+    //products();
 
     super.initState();
   }
@@ -152,12 +155,20 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   )),
                   SizedBox(height: 10,),
                   Expanded(
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: productList.length,
-                      itemBuilder: (context, index) {
-                        return productCart(productList[index]);
-                      }
+                    child: StreamBuilder(
+                      stream: mostPopularRef.snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
+                        if(stramSnapShot.hasData){
+                          return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: stramSnapShot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                        final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
+                        return productCart(documentSnapshot);
+                        });
+                        };
+                        return Center(child: CircularProgressIndicator(),);
+                      },
                     )
                   )
                 ]
@@ -225,7 +236,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     );
   }
 
-  Future<void> products() async {
+  /*Future<void> products() async {
     final String response = await rootBundle.loadString('assets/products.json');
     final data = await json.decode(response);
 
@@ -233,82 +244,123 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
       productList = data['products']
         .map((data) => Product.fromJson(data)).toList();
     });
-  }
+  }*/
 
-  productCart(Product product) {
+  productCart(DocumentSnapshot<Object?> documentSnapshot) {
     return AspectRatio(
       aspectRatio: 1 / 1,
-      child: FadeAnimation(1.5, GestureDetector(
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(product: product,)));
-        },
-        child: Container(
-          margin: EdgeInsets.only(right: 20, bottom: 25),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.white,
-            boxShadow: [BoxShadow(
-              offset: Offset(5, 10),
-              blurRadius: 15,
-              color: Colors.grey.shade200,
-            )],
-          ),
-          padding: EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 150,
-                child: Stack(
+      child: FadeAnimation(
+        1.5,
+        GestureDetector(
+          onTap: () {
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(product: documentSnapshot,)));
+          },
+          child: Container(
+            margin: EdgeInsets.only(right: 20, bottom: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  offset: Offset(5, 10),
+                  blurRadius: 15,
+                  color: Colors.grey.shade200,
+                )
+              ],
+            ),
+            padding: EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 150,
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: Image.network(
+                            documentSnapshot['product_img'],
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                      // Add to cart button
+                      Positioned(
+                        right: 5,
+                        bottom: 5,
+                        child: MaterialButton(
+                          color: Colors.black,
+                          minWidth: 45,
+                          height: 45,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          onPressed: () {
+                            addToCartModal();
+                          },
+                          padding: EdgeInsets.all(5),
+                          child: Center(
+                            child: Icon(
+                              Icons.shopping_cart,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  documentSnapshot['product_name'],
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                  ),
+                  softWrap: true,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2, // Adjust this based on your needs
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.network(product.imageURL, fit: BoxFit.cover)
+                    Flexible(
+                      child: Text(
+                        documentSnapshot['brand'],
+                        style: TextStyle(
+                          color: Colors.lightGreen.shade400,
+                          fontSize: 14,
+                        ),
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1, // Adjust this based on your needs
                       ),
                     ),
-                    // Add to cart button
-                    Positioned(
-                      right: 5,
-                      bottom: 5,
-                      child: MaterialButton(
+                    Text(
+                      "\৳ " + documentSnapshot['product_price'].toString() + '.00',
+                      style: TextStyle(
                         color: Colors.black,
-                        minWidth: 45,
-                        height: 45,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)
-                        ),
-                        onPressed: () {
-                          addToCartModal();
-                        },
-                        padding: EdgeInsets.all(5),
-                        child: Center(child: Icon(Icons.shopping_cart, color: Colors.white, size: 20,)),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
                       ),
-                    )
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1, // Adjust this based on your needs
+                    ),
                   ],
                 ),
-              ),
-              SizedBox(height: 20,),
-              Text(product.name,
-                style: TextStyle(color: Colors.black, fontSize: 18,),
-              ),
-              SizedBox(height: 10,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(product.brand, style: TextStyle(color: Colors.lightGreen.shade400, fontSize: 14,),),
-                  Text("\৳ " +product.price.toString() + '.00',
-                    style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
+
 
   forYou(Product product) {
     return AspectRatio(

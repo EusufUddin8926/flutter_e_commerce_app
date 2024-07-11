@@ -1,4 +1,5 @@
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/pages/cart.dart';
@@ -6,8 +7,15 @@ import 'package:flutter_e_commerce_app/pages/explore.dart';
 import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:flutter_e_commerce_app/pages/search.dart';
 
-void main() {
-  runApp(MaterialApp(
+import 'firebase_options.dart';
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(const MaterialApp(
     home: HomePage(),
     debugShowCheckedModeBanner: false,
   ));
