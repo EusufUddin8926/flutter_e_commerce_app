@@ -143,6 +143,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
           delegate: SliverChildListDelegate([
             Container(
               padding: EdgeInsets.only(top: 20, left: 20),
+              color: Colors.white,
               height: 330,
               child: Column(
                 children: [
@@ -178,6 +179,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
               )
             ),
             Container(
+                color: Colors.white,
               padding: EdgeInsets.only(top: 20, left: 20),
               height: 180,
               child: Column(
@@ -215,11 +217,12 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
               )
             ),
             Container(
+                color: Colors.white,
               padding: EdgeInsets.only(top: 20, left: 20),
               height: 330,
               child: Column(
                 children: [
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('নতুন পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),

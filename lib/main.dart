@@ -6,12 +6,12 @@ import 'package:flutter_e_commerce_app/pages/explore.dart';
 import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:flutter_e_commerce_app/pages/search.dart';
 import 'firebase_options.dart';
+import 'helpers/di.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  await initAppModule();
 
   runApp(const MaterialApp(
     home: HomePage(),

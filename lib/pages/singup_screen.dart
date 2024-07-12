@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/pages/signin_screen.dart';
 
 import '../Utils/colors.dart';
+import '../service/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -11,6 +13,14 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,31 +61,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     SizedBox(height: MediaQuery.sizeOf(context).height * 0.08),
                     // for username and password
-                    myTextField("Enter Email", Colors.white),
-                    myTextField("Password", Colors.black26),
-                    myTextField("Enter Full Name", Colors.white),
-                    myTextField("Enter Address", Colors.white),
-                    myTextField("Enter Phone Number", Colors.white),
+                    myTextField("Enter Email", Colors.white, emailController),
+                    myTextField("Password", Colors.black26, passwordController),
+                    myTextField("Enter Full Name", Colors.white, fullNameController),
+                    myTextField("Enter Address", Colors.white, addressController),
+                    myTextField("Enter Phone Number", Colors.white, phoneNumberController),
                     SizedBox(height: MediaQuery.sizeOf(context).height*0.03,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25),
                       child: Column(
                         children: [
                           // for sign in button
-                          Container(
-                            width: MediaQuery.sizeOf(context).width,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              color: buttonColor,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                "Registration",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  fontSize: 22,
+                          GestureDetector(
+                            onTap: (){
+                              AuthServices.signupUser(
+                                  emailController.text.toString(), passwordController.text.toString(), fullNameController.text.toString(),addressController.text.toString(),phoneNumberController.text.toString() ,context);
+                            },
+                            child: Container(
+                              width: MediaQuery.sizeOf(context).width,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: buttonColor,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  "Registration",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                  ),
                                 ),
                               ),
                             ),
@@ -147,13 +163,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Container myTextField(String hint, Color color) {
+  Container myTextField(String hint, Color color, TextEditingController controller) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 24,
         vertical: 8,
       ),
       child: TextField(
+        controller: controller,
         decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 20,
