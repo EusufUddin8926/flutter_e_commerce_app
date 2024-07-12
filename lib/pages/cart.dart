@@ -153,7 +153,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   cartItem(Product product, int index, animation) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(product: product)));
+       // Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(product: product)));
       },
       child: SlideTransition(
         position: Tween<Offset>(

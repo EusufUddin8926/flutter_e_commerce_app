@@ -38,6 +38,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   var selectedRange = RangeValues(150.00, 1500.00);
   
   CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
+  CollectionReference forYouRef = FirebaseFirestore.instance.collection("for yourself");
+  CollectionReference allProductRef = FirebaseFirestore.instance.collection("All Product");
 
   @override
   void initState() { 
@@ -191,12 +193,21 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   )),
                   SizedBox(height: 10,),
                   Expanded(
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: productList.length,
-                      itemBuilder: (context, index) {
-                        return forYou(productList[index]);
-                      }
+                    child: StreamBuilder(
+                      stream: forYouRef.snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
+                        if(stramSnapShot.hasData){
+                          return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: stramSnapShot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                final DocumentSnapshot forYoudocumentSnapshot = stramSnapShot.data!.docs[index];
+                                return forYou(forYoudocumentSnapshot);
+                              }
+                          );
+                        }
+                        return Center(child: CircularProgressIndicator(),);
+                      },
                     )
                   )
                 ]
@@ -219,12 +230,20 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   ),
                   SizedBox(height: 10,),
                   Expanded(
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: productList.length,
-                      itemBuilder: (context, index) {
-                        return productCart(productList[index]);
-                      }
+                    child: StreamBuilder(
+                      stream: allProductRef.snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
+                        if(stramSnapShot.hasData){
+                          return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: stramSnapShot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
+                                return productCart(documentSnapshot);
+                              });
+                        };
+                        return Center(child: CircularProgressIndicator(),);
+                      },
                     )
                   )
                 ]
@@ -253,7 +272,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         1.5,
         GestureDetector(
           onTap: () {
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(product: documentSnapshot,)));
+             Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: documentSnapshot,)));
           },
           child: Container(
             margin: EdgeInsets.only(right: 20, bottom: 16),
@@ -300,8 +319,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                           onPressed: () {
                             addToCartModal();
                           },
-                          padding: EdgeInsets.all(5),
-                          child: Center(
+                          padding: const EdgeInsets.all(5),
+                          child: const Center(
                             child: Icon(
                               Icons.shopping_cart,
                               color: Colors.white,
@@ -316,7 +335,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                 SizedBox(height: 20),
                 Text(
                   documentSnapshot['product_name'],
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 18,
                   ),
@@ -362,53 +381,88 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   }
 
 
-  forYou(Product product) {
+  forYou(DocumentSnapshot<Object?> forYoudocumentSnapshot) {
     return AspectRatio(
       aspectRatio: 3 / 1,
-      child: FadeAnimation(1.5, Container(
-        margin: EdgeInsets.only(right: 20, bottom: 25),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white,
-          boxShadow: [BoxShadow(
-            offset: Offset(5, 10),
-            blurRadius: 15,
-            color: Colors.grey.shade200,
-          )],
-        ),
-        padding: EdgeInsets.all(10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 100,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.network(product.imageURL, fit: BoxFit.cover)),
-            ),
-            SizedBox(width: 10,),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(product.name,
-                    style: TextStyle(color: Colors.black, fontSize: 18,),
-                  ),
-                  SizedBox(height: 5,),
-                  Text(product.brand, style: TextStyle(color: Colors.lightGreen.shade400, fontSize: 13,),),
-                  SizedBox(height: 10,),
-                  Text("\৳ " +product.price.toString() + '.00',
-                    style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w800),
-                  ),
-                ]
+      child: FadeAnimation(
+        1.5,
+        Container(
+          margin: EdgeInsets.only(right: 20, bottom: 25),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                offset: Offset(5, 10),
+                blurRadius: 15,
+                color: Colors.grey.shade200,
               ),
-            )
-          ],
+            ],
+          ),
+          padding: EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.network(
+                    forYoudocumentSnapshot['product_img'],
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        forYoudocumentSnapshot['product_name'],
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Flexible(
+                      child: Text(
+                        forYoudocumentSnapshot['brand'],
+                        style: TextStyle(
+                          color: Colors.lightGreen.shade400,
+                          fontSize: MediaQuery.of(context).size.width * 0.032,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Flexible(
+                      child: Text(
+                        "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: MediaQuery.of(context).size.width * 0.045,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
+
+
 
   showFilterModal() {
     showModalBottomSheet(
