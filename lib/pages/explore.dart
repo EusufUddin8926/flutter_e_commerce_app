@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_e_commerce_app/pages/product_view.dart';
@@ -76,15 +77,15 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
           backgroundColor: Colors.grey.shade50,
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
-            titlePadding: EdgeInsets.only(left: 20, right: 30, bottom: 100),
-            stretchModes: [
+            titlePadding: const EdgeInsets.only(left: 20, right: 30, bottom: 100),
+            stretchModes: const [
               StretchMode.zoomBackground,
               // StretchMode.fadeTitle
             ],
             title: AnimatedOpacity(
               opacity: _isScrolled ? 0.0 : 1.0,
               duration: Duration(milliseconds: 500),
-              child: FadeAnimation(1, Text("কৃষিতে আপনাকে স্বাগতম",
+              child: FadeAnimation(1, const Text("কৃষিতে আপনাকে স্বাগতম",
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 28.0,
@@ -386,76 +387,81 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
       aspectRatio: 3 / 1,
       child: FadeAnimation(
         1.5,
-        Container(
-          margin: EdgeInsets.only(right: 20, bottom: 25),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                offset: Offset(5, 10),
-                blurRadius: 15,
-                color: Colors.grey.shade200,
-              ),
-            ],
-          ),
-          padding: EdgeInsets.all(10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.network(
-                    forYoudocumentSnapshot['product_img'],
-                    fit: BoxFit.cover,
+        GestureDetector(
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: forYoudocumentSnapshot,)));
+          },
+          child: Container(
+            margin: EdgeInsets.only(right: 20, bottom: 25),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  offset: Offset(5, 10),
+                  blurRadius: 15,
+                  color: Colors.grey.shade200,
+                ),
+              ],
+            ),
+            padding: EdgeInsets.all(10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.network(
+                      forYoudocumentSnapshot['product_img'],
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        forYoudocumentSnapshot['product_name'],
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Flexible(
-                      child: Text(
-                        forYoudocumentSnapshot['brand'],
-                        style: TextStyle(
-                          color: Colors.lightGreen.shade400,
-                          fontSize: MediaQuery.of(context).size.width * 0.032,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Flexible(
-                      child: Text(
-                        "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: MediaQuery.of(context).size.width * 0.045,
-                          fontWeight: FontWeight.w800,
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          forYoudocumentSnapshot['product_name'],
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 5),
+                      Flexible(
+                        child: Text(
+                          forYoudocumentSnapshot['brand'],
+                          style: TextStyle(
+                            color: Colors.lightGreen.shade400,
+                            fontSize: MediaQuery.of(context).size.width * 0.032,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Flexible(
+                        child: Text(
+                          "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: MediaQuery.of(context).size.width * 0.045,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

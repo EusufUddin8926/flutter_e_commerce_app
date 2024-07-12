@@ -1,24 +1,29 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/pages/signin_screen.dart';
+import 'package:flutter_e_commerce_app/pages/user_profile_screen.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.yellow.withOpacity(0.1),
         title: Text('Profile Page', style: TextStyle(color: Colors.black)),
-      ),
-      body: Center(
-        child: Text('Profile Page')
-      ),
+      ),*/
+      body: StreamBuilder(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return UserProfileScreen();
+          }else{
+            return SignInScreen();
+          }
+        },
+      )
     );
   }
 }

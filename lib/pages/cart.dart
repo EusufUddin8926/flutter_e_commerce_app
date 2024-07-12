@@ -92,7 +92,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
             1.2,
             Container(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text('শিপিং চার্জ', style: TextStyle(fontSize: 20)),
@@ -142,7 +142,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 color: Colors.lightGreen[800],
-                child: Center(
+                child: const Center(
                   child: Text(
                     "চেকআউট",
                     style: TextStyle(color: Colors.white, fontSize: 18),
@@ -217,12 +217,12 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     SizedBox(height: 5),
                     Text(
                       product.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     Text(
                       '\৳${product.price}',
                       style: TextStyle(
@@ -230,7 +230,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -239,7 +239,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 children: [
                   MaterialButton(
                     minWidth: 10,
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     onPressed: () {
                       setState(() {
                         if (cartItemCount[index] > 1) {
@@ -248,21 +248,19 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                         }
                       });
                     },
-                    shape: CircleBorder(),
+                    shape: const CircleBorder(),
                     child: Icon(
                       Icons.remove_circle_outline,
                       color: Colors.grey.shade400,
                       size: 30,
                     ),
                   ),
-                  Container(
-                    child: Center(
-                      child: Text(
-                        cartItemCount[index].toString(),
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.grey.shade800,
-                        ),
+                  Center(
+                    child: Text(
+                      cartItemCount[index].toString(),
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                   ),
@@ -276,8 +274,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                         totalPrice += product.price;
                       });
                     },
-                    shape: CircleBorder(),
-                    child: Icon(
+                    shape: const CircleBorder(),
+                    child: const Icon(
                       Icons.add_circle,
                       size: 30,
                     ),
