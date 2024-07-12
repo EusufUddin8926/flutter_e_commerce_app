@@ -172,11 +172,11 @@ class _ProductViewPageState extends State<ProductViewPage> {
                               },
                             ),
                           ),
-                          SizedBox(height: 10),
+                          /*SizedBox(height: 10),
                           Text(
                             'ফারমার লিস্ট :',
                             style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
-                          ),
+                          ),*/
 
 
                         ],
