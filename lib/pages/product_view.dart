@@ -1,8 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/components/single_farmer_item.dart';
 import 'package:flutter_e_commerce_app/models/farmer_model.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+
+import '../service/firestore_service.dart';
 
 class ProductViewPage extends StatefulWidget {
   final DocumentSnapshot<Object?> documentSnapshot;
@@ -14,27 +21,57 @@ class ProductViewPage extends StatefulWidget {
 
 class _ProductViewPageState extends State<ProductViewPage> {
   List<int> size = [
+    1,
+    5,
+    10,
+    15,
+    20,
     25,
+    40,
     50,
-    75,
+    80,
     100,
   ];
 
-  int _selectedSize = 1;
+  int _selectedSize = 0;
   List<FarmerModel> farmerList = [];
+  int? selectedFarmerIndex;
+  late String totalPrice, unitPrice, amount, seller_name;
 
 
   @override
   void initState() {
     super.initState();
     _initializeFarmerList();
+    configLoading();
+  }
 
+
+  void configLoading() {
+    EasyLoading.instance
+      ..displayDuration = const Duration(milliseconds: 2000)
+      ..indicatorType = EasyLoadingIndicatorType.fadingCircle
+      ..loadingStyle = EasyLoadingStyle.dark
+      ..indicatorSize = 45.0
+      ..radius = 10.0
+      ..boxShadow = <BoxShadow>[]
+      ..progressColor = Colors.yellow
+      ..backgroundColor = Colors.grey.withOpacity(0.2)
+      ..indicatorColor = Colors.yellow
+      ..textColor = Colors.yellow
+      ..maskColor = Colors.grey.withOpacity(0.2)
+      ..backgroundColor = Colors.transparent
+      ..maskType = EasyLoadingMaskType.custom
+      ..userInteractions = false
+      ..dismissOnTap = false;
+      //..customAnimation = CustomAnimation();
   }
 
   void _initializeFarmerList() {
     // Assuming `product_owner` is a list of farmer names
     List<dynamic> productOwners = widget.documentSnapshot['product_owner'];
-    farmerList = productOwners.map((owner) => FarmerModel(owner, false)).toList();
+    farmerList =
+        productOwners.map((owner) => FarmerModel(owner, false)).toList();
     setState(() {});
   }
 
@@ -46,7 +83,10 @@ class _ProductViewPageState extends State<ProductViewPage> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: MediaQuery.of(context).size.height * 0.6,
+              expandedHeight: MediaQuery
+                  .of(context)
+                  .size
+                  .height * 0.6,
               elevation: 0,
               snap: true,
               floating: true,
@@ -58,8 +98,14 @@ class _ProductViewPageState extends State<ProductViewPage> {
                 ],
                 background: Center(
                   child: Container(
-                    width: MediaQuery.of(context).size.width * 0.7,
-                    height: MediaQuery.of(context).size.height * 0.3,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width * 0.7,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height * 0.3,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16.0),
                       child: Image.network(
@@ -104,7 +150,8 @@ class _ProductViewPageState extends State<ProductViewPage> {
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 5),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -133,8 +180,10 @@ class _ProductViewPageState extends State<ProductViewPage> {
                                 ],
                               ),
                               Text(
-                                "\৳ " + widget.documentSnapshot['product_price'].toString() + '.00',
-                                style: TextStyle(color: Colors.black, fontSize: 16),
+                                "\৳ " + widget.documentSnapshot['product_price']
+                                    .toString() + '.00',
+                                style: const TextStyle(
+                                    color: Colors.black, fontSize: 16),
                               ),
                             ],
                           ),
@@ -150,9 +199,10 @@ class _ProductViewPageState extends State<ProductViewPage> {
                           SizedBox(height: 10),
                           Text(
                             'পরিমান',
-                            style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 18),
                           ),
-                          Container(
+                          SizedBox(
                             height: 60,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
@@ -165,8 +215,8 @@ class _ProductViewPageState extends State<ProductViewPage> {
                                     });
                                   },
                                   child: AnimatedContainer(
-                                    duration: Duration(milliseconds: 500),
-                                    margin: EdgeInsets.only(right: 10),
+                                    duration: const Duration(milliseconds: 500),
+                                    margin: const EdgeInsets.only(right: 10),
                                     decoration: BoxDecoration(
                                       color: _selectedSize == index
                                           ? Colors.lightGreen[800]
@@ -194,14 +244,42 @@ class _ProductViewPageState extends State<ProductViewPage> {
                           SizedBox(height: 10),
                           Text(
                             'ফারমার লিস্ট :',
-                            style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 18),
                           ),
-                          ListView.builder(
-                           itemCount: farmerList.length,
-                           scrollDirection: Axis.vertical,
-                           itemBuilder: (context, index){
-
-                          })
+                          Container(
+                            width: MediaQuery
+                                .of(context)
+                                .size
+                                .width,
+                            // Adjust width as needed
+                            height: farmerList.length * 50.0,
+                            // Adjust height based on item count and item height
+                            child: ListView.builder(
+                              itemCount: farmerList.length,
+                              scrollDirection: Axis.vertical,
+                              shrinkWrap: true,
+                              // Allows the ListView to wrap its content
+                              physics: NeverScrollableScrollPhysics(),
+                              // Disables scrolling
+                              itemBuilder: (context, index) {
+                                return SingleFarmerItem(
+                                  index: index,
+                                  farmer: farmerList[index],
+                                  onSelected: (index) {
+                                    setState(() {
+                                      selectedFarmerIndex = index;
+                                      for (int i = 0; i <
+                                          farmerList.length; i++) {
+                                        farmerList[i].isFarmerSelected =
+                                        (i == selectedFarmerIndex);
+                                      }
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                          ),
 
 
                         ],
@@ -209,10 +287,29 @@ class _ProductViewPageState extends State<ProductViewPage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
                     child: MaterialButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        EasyLoading.show(status: "Update Cart...");
+                        User? userCredential = await FirebaseAuth.instance
+                            .currentUser;
+                        totalPrice = ((widget.documentSnapshot['product_price'] as int)*
+                            size[_selectedSize]).toString();
+
+                       await FirestoreServices.addItemToCart(
+                            userCredential!.uid.toString(),
+                            widget.documentSnapshot['product_name'],
+                            widget.documentSnapshot['brand'],
+                            widget.documentSnapshot['product_price'],
+                            widget.documentSnapshot['product_img'],
+                            _selectedSize.toString(),
+                            totalPrice,
+                            farmerList[selectedFarmerIndex!].farmerName,
+                            context);
+
                         Navigator.pop(context);
+                        EasyLoading.dismiss();
                       },
                       height: 50,
                       elevation: 0,
@@ -221,7 +318,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       color: Colors.lightGreen[800],
-                      child: Center(
+                      child: const Center(
                         child: Text(
                           "কার্টে যোগ করুন",
                           style: TextStyle(color: Colors.white, fontSize: 18),
@@ -237,6 +334,5 @@ class _ProductViewPageState extends State<ProductViewPage> {
       ),
     );
   }
-
 
 }

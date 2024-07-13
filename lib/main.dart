@@ -5,6 +5,7 @@ import 'package:flutter_e_commerce_app/pages/cart.dart';
 import 'package:flutter_e_commerce_app/pages/explore.dart';
 import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:flutter_e_commerce_app/pages/search.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'firebase_options.dart';
 import 'helpers/di.dart';
 
@@ -13,9 +14,10 @@ void main() async{
 
   await initAppModule();
 
-  runApp(const MaterialApp(
-    home: HomePage(),
+  runApp( MaterialApp(
+    home: const HomePage(),
     debugShowCheckedModeBanner: false,
+    builder: EasyLoading.init(),
   ));
 }
 

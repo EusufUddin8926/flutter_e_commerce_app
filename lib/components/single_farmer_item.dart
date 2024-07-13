@@ -28,15 +28,17 @@ class _SingleFarmerItemState extends State<SingleFarmerItem> {
       },
       child: Container(
         width: MediaQuery.sizeOf(context).width * 0.8,
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
+        margin: const EdgeInsets.only(top: 4, bottom: 4),
         decoration: BoxDecoration(
-          color: widget.farmer.isFarmerSelected ? Colors.lightGreen : Colors.white,
+          color: widget.farmer.isFarmerSelected ? Colors.lightGreen[800] : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: widget.farmer.isFarmerSelected ? Colors.green : Colors.grey,
           ),
         ),
         child: Text(
+          textAlign: TextAlign.center,
           widget.farmer.farmerName,
           style: TextStyle(
             fontSize: 16,

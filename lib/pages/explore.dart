@@ -1,11 +1,16 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_e_commerce_app/pages/product_view.dart';
 import '../animation/FadeAnimation.dart';
+import '../components/single_farmer_item.dart';
+import '../models/farmer_model.dart';
 import '../models/product.dart';
+import '../service/firestore_service.dart';
 
 class ExplorePage extends StatefulWidget {  
   const ExplorePage({ Key? key }) : super(key: key);
@@ -19,9 +24,15 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   bool _isScrolled = false;
   List<dynamic> productList = [];
   List<int> size = [
+    1,
+    5,
+    10,
+    15,
+    20,
     25,
+    40,
     50,
-    75,
+    80,
     100,
   ];
 
@@ -37,6 +48,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   int _selectedSize = 1;
 
   var selectedRange = RangeValues(150.00, 1500.00);
+  late String totalPrice, unitPrice, amount, seller_name;
+
   
   CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
   CollectionReference forYouRef = FirebaseFirestore.instance.collection("for yourself");
@@ -321,7 +334,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                             borderRadius: BorderRadius.circular(50),
                           ),
                           onPressed: () {
-                            addToCartModal();
+                            addToCartModal(documentSnapshot);
                           },
                           padding: const EdgeInsets.all(5),
                           child: const Center(
@@ -571,7 +584,9 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     }
                   ),
                   const SizedBox(height: 20,),
-                  button('Filter', () {})
+                  button('Filter', () {
+
+                  })
                 ],
               ),
             );
@@ -581,54 +596,132 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     );
   }
 
-  addToCartModal() {
+  addToCartModal(DocumentSnapshot<Object?> documentSnapshot) async{
+
+    List<FarmerModel> farmerList = [];
+    int? selectedFarmerIndex;
+
+    List<dynamic> productOwners = documentSnapshot['product_owner'];
+    farmerList = productOwners.map((owner) => FarmerModel(owner, false)).toList();
+    setState(() {});
+
+
     return showModalBottomSheet(
-      context: context, 
-      transitionAnimationController: AnimationController(duration: Duration(milliseconds: 400), vsync: this),
+      context: context,
+      transitionAnimationController: AnimationController(
+        duration: const Duration(milliseconds: 400),
+        vsync: this,
+      ),
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return Container(
-            height: 350,
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(40.0),
+                  topLeft: Radius.circular(40.0)),
               color: Colors.white,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("পরিমান", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                SizedBox(height: 10,),
-                Container(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: size.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedSize = index;
-                          });
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "পরিমান",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    Container(
+                      height: 60,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: size.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedSize = index;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 500),
+                              margin: EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                color: _selectedSize == index
+                                    ? Colors.lightGreen[800]
+                                    : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                              ),
+                              width: 40,
+                              height: 40,
+                              child: Center(
+                                child: Text(
+                                  size[index].toString(),
+                                  style: TextStyle(
+                                    color: _selectedSize == index
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
                         },
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 500),
-                          margin: EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            color: _selectedSize == index ? Colors.lightGreen[800] : Colors.grey.shade200,
-                            shape: BoxShape.circle
-                          ),
-                          width: 40,
-                          height: 40,
-                          child: Center(
-                            child: Text(size[index].toString(), style: TextStyle(color: _selectedSize == index ? Colors.white : Colors.black, fontSize: 15),),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'ফারমার লিস্ট :',
+                      style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: farmerList.length * 50.0,
+                      child: ListView.builder(
+                        itemCount: farmerList.length,
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true, // Allows the ListView to wrap its content
+                        physics: const NeverScrollableScrollPhysics(), // Disables scrolling
+                        itemBuilder: (context, index) {
+                          return SingleFarmerItem(
+                            index: index,
+                            farmer: farmerList[index],
+                            onSelected: (index) {
+                              setState(() {
+                                selectedFarmerIndex = index;
+                                for (int i = 0; i < farmerList.length; i++) {
+                                  farmerList[i].isFarmerSelected = (i == selectedFarmerIndex);
+                                }
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20,),
-                button('কার্টে যোগ করুন', () {
+                button('কার্টে যোগ করুন', () async{
+
+                  User? userCredential = await FirebaseAuth.instance
+                      .currentUser;
+                  totalPrice = ((documentSnapshot['product_price'] as int)*
+                      size[_selectedSize]).toString();
+
+                  await FirestoreServices.addItemToCart(
+                      userCredential!.uid.toString(),
+                      documentSnapshot['product_name'],
+                      documentSnapshot['brand'],
+                      documentSnapshot['product_price'],
+                      documentSnapshot['product_img'],
+                      _selectedSize.toString(),
+                      totalPrice,
+                      farmerList[selectedFarmerIndex!].farmerName,
+                      context);
+
                   Navigator.pop(context);
 
                   //show a snackbar when an item is added to the cart
@@ -642,13 +735,14 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   );
 
                   ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                })
+                }),
               ],
             ),
           );
         },
-      )
+      ),
     );
+
   }
 
   button(String text, Function onPressed) {
@@ -662,7 +756,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
       ),
       color: Colors.lightGreen[800],
       child: Center(
-        child: Text(text, style: TextStyle(color: Colors.white, fontSize: 18),),
+        child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 18),),
       ),
     );
   }
