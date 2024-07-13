@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/models/farmer_model.dart';
 
 class ProductViewPage extends StatefulWidget {
   final DocumentSnapshot<Object?> documentSnapshot;
@@ -18,6 +21,22 @@ class _ProductViewPageState extends State<ProductViewPage> {
   ];
 
   int _selectedSize = 1;
+  List<FarmerModel> farmerList = [];
+
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFarmerList();
+
+  }
+
+  void _initializeFarmerList() {
+    // Assuming `product_owner` is a list of farmer names
+    List<dynamic> productOwners = widget.documentSnapshot['product_owner'];
+    farmerList = productOwners.map((owner) => FarmerModel(owner, false)).toList();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +117,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                                 children: [
                                   Text(
                                     widget.documentSnapshot['product_name'],
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
@@ -172,11 +191,17 @@ class _ProductViewPageState extends State<ProductViewPage> {
                               },
                             ),
                           ),
-                          /*SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Text(
                             'ফারমার লিস্ট :',
                             style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
-                          ),*/
+                          ),
+                          ListView.builder(
+                           itemCount: farmerList.length,
+                           scrollDirection: Axis.vertical,
+                           itemBuilder: (context, index){
+
+                          })
 
 
                         ],
@@ -212,4 +237,6 @@ class _ProductViewPageState extends State<ProductViewPage> {
       ),
     );
   }
+
+
 }

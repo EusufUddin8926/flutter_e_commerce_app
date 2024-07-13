@@ -18,9 +18,9 @@ class ProfilePage extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot){
           if(snapshot.hasData){
-            return SignInScreen();
+            return const UserProfileScreen();
           }else{
-            return SignInScreen();
+            return const SignInScreen();
           }
         },
       )

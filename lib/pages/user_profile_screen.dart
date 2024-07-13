@@ -10,9 +10,11 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text("I am from User Profile in page"),
+    return const Scaffold(
+      body: Column(
+        children: [
+
+        ],
       ),
     );
   }

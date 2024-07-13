@@ -147,7 +147,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
               height: 330,
               child: Column(
                 children: [
-                  FadeAnimation(1.4, Row(
+                  FadeAnimation(1.4, const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('বহুল প্রচলিত পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
@@ -171,7 +171,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                         return productCart(documentSnapshot);
                         });
                         };
-                        return Center(child: CircularProgressIndicator(),);
+                        return const Center(child: CircularProgressIndicator(),);
                       },
                     )
                   )
@@ -184,7 +184,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
               height: 180,
               child: Column(
                 children: [
-                  FadeAnimation(1.4, Row(
+                  FadeAnimation(1.4, const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('আপনার জন্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
@@ -365,7 +365,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                     Text(
                       "\৳ " + documentSnapshot['product_price'].toString() + '.00',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black,
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -477,7 +477,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
       ),
       builder: (context) {
@@ -542,11 +542,11 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   ),
                   // Slider Price Renge filter
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Price Range', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      const Text('Price Range', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -557,7 +557,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       ),
                     ],
                   ),
-                  SizedBox(height: 10,),
+                  const SizedBox(height: 10,),
                   RangeSlider(
                     values: selectedRange, 
                     min: 0.00,
@@ -570,7 +570,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       setState(() => selectedRange = values);
                     }
                   ),
-                  SizedBox(height: 20,),
+                  const SizedBox(height: 20,),
                   button('Filter', () {})
                 ],
               ),
@@ -589,8 +589,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         builder: (context, setState) {
           return Container(
             height: 350,
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
               color: Colors.white,
             ),
             child: Column(
@@ -627,14 +627,14 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     },
                   ),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 button('কার্টে যোগ করুন', () {
                   Navigator.pop(context);
 
                   //show a snackbar when an item is added to the cart
                   final snackbar = SnackBar(
-                    content: Text("পণ্যটি কার্টে যোগ করা হয়েছে"),
-                    duration: Duration(seconds: 5),
+                    content: const Text("পণ্যটি কার্টে যোগ করা হয়েছে"),
+                    duration: const Duration(seconds: 5),
                     action: SnackBarAction(
                       label: 'Undo',
                       onPressed: () {},
