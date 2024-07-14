@@ -55,7 +55,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
   CollectionReference forYouRef = FirebaseFirestore.instance.collection("for yourself");
   CollectionReference allProductRef = FirebaseFirestore.instance.collection("All Product");
-  // CollectionReference applogo = FirebaseFirestore.instance.collection("App Logo");
 
   @override
   void initState() { 
