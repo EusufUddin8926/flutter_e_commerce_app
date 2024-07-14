@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -54,6 +55,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
   CollectionReference forYouRef = FirebaseFirestore.instance.collection("for yourself");
   CollectionReference allProductRef = FirebaseFirestore.instance.collection("All Product");
+  // CollectionReference applogo = FirebaseFirestore.instance.collection("App Logo");
 
   @override
   void initState() { 
@@ -88,23 +90,64 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
           floating: true,
           stretch: true,
           backgroundColor: Colors.grey.shade50,
-          flexibleSpace: FlexibleSpaceBar(
-            collapseMode: CollapseMode.pin,
-            titlePadding: const EdgeInsets.only(left: 20, right: 30, bottom: 100),
-            stretchModes: const [
-              StretchMode.zoomBackground,
-              // StretchMode.fadeTitle
-            ],
-            title: AnimatedOpacity(
-              opacity: _isScrolled ? 0.0 : 1.0,
-              duration: Duration(milliseconds: 500),
-              child: FadeAnimation(1, const Text("কৃষিতে আপনাকে স্বাগতম",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 28.0,
-                ))),
-            ),
-            background: Image.asset("assets/images/background.png", fit: BoxFit.cover,)
+          flexibleSpace: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double minExtent = MediaQuery.of(context).padding.top + kToolbarHeight;
+              final double maxExtent = constraints.maxHeight;
+              final double currentExtent = constraints.biggest.height;
+              final double deltaExtent = maxExtent - minExtent;
+              final double t = (1.0 - (currentExtent - minExtent) / deltaExtent).clamp(0.0, 1.0);
+              
+              final double logoHeight = lerpDouble(120, 40, t)!;
+              final double fontSize = lerpDouble(20, 18, t)!;
+
+              return FlexibleSpaceBar(
+                centerTitle: true,
+                title: SafeArea(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 200),
+                        height: logoHeight,
+                        margin: EdgeInsets.only(bottom: 8),
+                        child: Image.asset(
+                          'assets/images/logo.png', // Replace with your actual asset path
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      Text(
+                        "কৃষিতে আপনাকে স্বাগতম",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset("assets/images/background.png", fit: BoxFit.cover),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.3),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           bottom: AppBar(
             toolbarHeight: 70,
