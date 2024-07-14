@@ -52,106 +52,108 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
         backgroundColor: Colors.transparent,
         title: Text('কার্ট', style: TextStyle(color: Colors.black)),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            height: MediaQuery.of(context).size.height * 0.53,
-            child: cartItems.isNotEmpty
-                ? FadeAnimation(
-              1.4,
-              AnimatedList(
-                key: _listKey,
-                scrollDirection: Axis.vertical,
-                initialItemCount: cartItems.length,
-                itemBuilder: (context, index, animation) {
-                  return Slidable(
-                    key: Key(cartItems[index].toString()),
-                    startActionPane: ActionPane(
-                      motion: ScrollMotion(),
-                      children: [
-                        SlidableAction(
-                          onPressed: (context) => removeItem(index),
-                          backgroundColor: Colors.red.withOpacity(0.15),
-                          foregroundColor: Colors.red,
-                          icon: Icons.delete,
-                          label: 'Delete',
-                        ),
-                      ],
-                    ),
-                    child: cartItem(cartItems[index], index, animation),
-                  );
-                },
-              ),
-            )
-                : Container(),
-          ),
-          SizedBox(height: 30),
-          FadeAnimation(
-            1.2,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
             Container(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text('শিপিং চার্জ', style: TextStyle(fontSize: 20)),
-                  Text('\৳১০০', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ],
-              ),
+              height: MediaQuery.of(context).size.height * 0.5, // Reduced height
+              child: cartItems.isNotEmpty
+                  ? FadeAnimation(
+                      1.4,
+                      AnimatedList(
+                        key: _listKey,
+                        scrollDirection: Axis.vertical,
+                        initialItemCount: cartItems.length,
+                        itemBuilder: (context, index, animation) {
+                          return Slidable(
+                            key: Key(cartItems[index].toString()),
+                            startActionPane: ActionPane(
+                              motion: ScrollMotion(),
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) => removeItem(index),
+                                  backgroundColor: Colors.red.withOpacity(0.15),
+                                  foregroundColor: Colors.red,
+                                  icon: Icons.delete,
+                                  label: 'Delete',
+                                ),
+                              ],
+                            ),
+                            child: cartItem(cartItems[index], index, animation),
+                          );
+                        },
+                      ),
+                    )
+                  : Container(),
             ),
-          ),
-          FadeAnimation(
-            1.3,
-            Padding(
-              padding: EdgeInsets.all(20.0),
-              child: DottedBorder(
-                color: Colors.grey.shade400,
-                dashPattern: [10, 10],
-                padding: EdgeInsets.all(0),
-                child: Container(),
-              ),
-            ),
-          ),
-          FadeAnimation(
-            1.3,
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text('মোট', style: TextStyle(fontSize: 20)),
-                  Text('\৳${totalPrice + 100}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 10),
-          FadeAnimation(
-            1.4,
-            Padding(
-              padding: EdgeInsets.all(20.0),
-              child: MaterialButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage()));
-                },
-                height: 50,
-                elevation: 0,
-                splashColor: Colors.lightGreen[700],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(height: 20), // Reduced height
+            FadeAnimation(
+              1.2,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text('শিপিং চার্জ', style: TextStyle(fontSize: 18)), // Reduced font size
+                    Text('\৳১০০', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                  ],
                 ),
-                color: Colors.lightGreen[800],
-                child: const Center(
-                  child: Text(
-                    "চেকআউট",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+            FadeAnimation(
+              1.3,
+              Padding(
+                padding: EdgeInsets.all(15.0), // Reduced padding
+                child: DottedBorder(
+                  color: Colors.grey.shade400,
+                  dashPattern: [10, 10],
+                  padding: EdgeInsets.all(0),
+                  child: Container(),
+                ),
+              ),
+            ),
+            FadeAnimation(
+              1.3,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text('মোট', style: TextStyle(fontSize: 18)), // Reduced font size
+                    Text('\৳${totalPrice + 100}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            FadeAnimation(
+              1.4,
+              Padding(
+                padding: EdgeInsets.all(20.0),
+                child: MaterialButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage()));
+                  },
+                  height: 45, // Reduced height
+                  elevation: 0,
+                  splashColor: Colors.lightGreen[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  color: Colors.lightGreen[800],
+                  child: const Center(
+                    child: Text(
+                      "চেকআউট",
+                      style: TextStyle(color: Colors.white, fontSize: 16), // Reduced font size
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -176,7 +178,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           end: Offset.zero,
         ).animate(animation),
         child: Container(
-          margin: EdgeInsets.only(bottom: 20),
+          margin: EdgeInsets.only(bottom: 15), // Reduced margin
           padding: EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -198,8 +200,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                   child: Image.network(
                     product.imageURL,
                     fit: BoxFit.cover,
-                    height: 100,
-                    width: 100,
+                    height: 80, // Reduced height
+                    width: 80, // Reduced width
                   ),
                 ),
               ),
@@ -211,26 +213,25 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                       product.brand,
                       style: TextStyle(
                         color: Colors.lightGreen.shade400,
-                        fontSize: 14,
+                        fontSize: 12, // Reduced font size
                       ),
                     ),
-                    SizedBox(height: 5),
+                    SizedBox(height: 3), // Reduced spacing
                     Text(
                       product.name,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16, // Reduced font size
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 10), // Reduced spacing
                     Text(
                       '\৳${product.price}',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18, // Reduced font size
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    const SizedBox(height: 10),
                   ],
                 ),
               ),
@@ -252,14 +253,14 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     child: Icon(
                       Icons.remove_circle_outline,
                       color: Colors.grey.shade400,
-                      size: 30,
+                      size: 25, // Reduced size
                     ),
                   ),
                   Center(
                     child: Text(
                       cartItemCount[index].toString(),
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18, // Reduced font size
                         color: Colors.grey.shade800,
                       ),
                     ),
@@ -277,7 +278,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     shape: const CircleBorder(),
                     child: const Icon(
                       Icons.add_circle,
-                      size: 30,
+                      size: 25, // Reduced size
                     ),
                   ),
                 ],
