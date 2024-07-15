@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -272,20 +273,5 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 }
 
-class UserProfile {
-  final String fullName;
-  final String email;
-  final String phoneNumber;
-  final String address;
-  final String profilePhotoUrl;
-  final String type;
 
-  UserProfile({
-    required this.fullName,
-    required this.email,
-    required this.phoneNumber,
-    required this.address,
-    required this.profilePhotoUrl,
-    required this.type,
-  });
-}
+
