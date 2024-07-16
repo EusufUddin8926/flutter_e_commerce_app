@@ -103,28 +103,42 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
               return FlexibleSpaceBar(
                 centerTitle: true,
                 title: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedContainer(
-                        duration: Duration(milliseconds: 200),
-                        height: logoHeight,
-                        margin: EdgeInsets.only(bottom: 8),
-                        child: Image.asset(
-                          'assets/images/logo.png', // Replace with your actual asset path
-                          fit: BoxFit.contain,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: NeverScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AnimatedContainer(
+                                  duration: Duration(milliseconds: 200),
+                                  height: logoHeight,
+                                  margin: EdgeInsets.only(bottom: 8),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                Text(
+                                  "কৃষিতে আপনাকে স্বাগতম",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      Text(
-                        "কৃষিতে আপনাকে স্বাগতম",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
                 background: Stack(
