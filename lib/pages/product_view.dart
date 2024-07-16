@@ -1,12 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/components/single_farmer_item.dart';
-import 'package:flutter_e_commerce_app/helpers/network_info.dart';
 import 'package:flutter_e_commerce_app/models/farmer_model.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../service/firestore_service.dart';
 
@@ -19,17 +20,28 @@ class ProductViewPage extends StatefulWidget {
 }
 
 class _ProductViewPageState extends State<ProductViewPage> {
-  double selectedAmount = 1.0;
+  List<int> size = [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    40,
+    50,
+    80,
+    100,
+  ];
+
+  int _selectedSize = 0;
   List<FarmerModel> farmerList = [];
   int? selectedFarmerIndex;
-  late String totalPrice, unitPrice, seller_name;
-  late NetworkInfo _networkInfo;
+  late String totalPrice, unitPrice, amount, seller_name;
 
 
   @override
   void initState() {
     super.initState();
-    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
     _initializeFarmerList();
     configLoading();
   }
@@ -52,19 +64,14 @@ class _ProductViewPageState extends State<ProductViewPage> {
       ..maskType = EasyLoadingMaskType.custom
       ..userInteractions = false
       ..dismissOnTap = false;
+      //..customAnimation = CustomAnimation();
   }
 
   void _initializeFarmerList() {
-
+    // Assuming `product_owner` is a list of farmer names
     List<dynamic> productOwners = widget.documentSnapshot['product_owner'];
-    farmerList = productOwners.map((owner) {
-      return FarmerModel(
-          owner['name'] ?? '',
-          owner['uId'] ?? '',
-          false
-      );
-    }).toList();
-
+    farmerList =
+        productOwners.map((owner) => FarmerModel(owner, false)).toList();
     setState(() {});
   }
 
@@ -190,12 +197,50 @@ class _ProductViewPageState extends State<ProductViewPage> {
                             ),
                           ),
                           SizedBox(height: 10),
-                         /* Text(
+                          Text(
                             'পরিমান',
                             style: TextStyle(
                                 color: Colors.grey.shade400, fontSize: 18),
-                          ),*/
-                          _buildAmountSelector(),
+                          ),
+                          SizedBox(
+                            height: 60,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: size.length,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedSize = index;
+                                    });
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 500),
+                                    margin: const EdgeInsets.only(right: 10),
+                                    decoration: BoxDecoration(
+                                      color: _selectedSize == index
+                                          ? Colors.lightGreen[800]
+                                          : Colors.grey.shade200,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    width: 40,
+                                    height: 40,
+                                    child: Center(
+                                      child: Text(
+                                        size[index].toString(),
+                                        style: TextStyle(
+                                          color: _selectedSize == index
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                           SizedBox(height: 10),
                           Text(
                             'ফারমার লিস্ট :',
@@ -215,7 +260,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                               scrollDirection: Axis.vertical,
                               shrinkWrap: true,
                               // Allows the ListView to wrap its content
-                              physics: const NeverScrollableScrollPhysics(),
+                              physics: NeverScrollableScrollPhysics(),
                               // Disables scrolling
                               itemBuilder: (context, index) {
                                 return SingleFarmerItem(
@@ -246,58 +291,21 @@ class _ProductViewPageState extends State<ProductViewPage> {
                         horizontal: 20, vertical: 10),
                     child: MaterialButton(
                       onPressed: () async {
-
+                        EasyLoading.show(status: "Update Cart...");
                         User? userCredential = await FirebaseAuth.instance
                             .currentUser;
-
-                        if(!await _networkInfo.isConnected){
-                          const snackbar = SnackBar(
-                            content: Text("No internet available!"),
-                            duration: Duration(seconds: 5),
-                          );
-
-                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                          return;
-                        }
-
-                        if(userCredential == null){
-                          const snackbar = SnackBar(
-                            content: Text("No user is currently logged in."),
-                            duration: Duration(seconds: 5),
-                          );
-
-                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                          return;
-                        }
-
-                        if(selectedFarmerIndex == null){
-                          const snackbar = SnackBar(
-                            content: Text("First select a farmer!"),
-                            duration: Duration(seconds: 5),
-                          );
-
-                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                          return;
-                        }
-
-
-
-                        EasyLoading.show(status: "Update Cart...");
-
                         totalPrice = ((widget.documentSnapshot['product_price'] as int)*
-                            selectedAmount.toInt()).toString();
+                            size[_selectedSize]).toString();
 
                        await FirestoreServices.addItemToCart(
-                            userCredential.uid,
-                            DateTime.now().millisecondsSinceEpoch.toString(),
+                            userCredential!.uid.toString(),
                             widget.documentSnapshot['product_name'],
                             widget.documentSnapshot['brand'],
                             widget.documentSnapshot['product_price'],
                             widget.documentSnapshot['product_img'],
-                           (selectedAmount.toInt()).toString(),
+                            _selectedSize.toString(),
                             totalPrice,
                             farmerList[selectedFarmerIndex!].farmerName,
-                            farmerList[selectedFarmerIndex!].farmerId,
                             context);
 
                         Navigator.pop(context);
@@ -324,42 +332,6 @@ class _ProductViewPageState extends State<ProductViewPage> {
           ],
         ),
       ),
-    );
-  }
-
-
-  Widget _buildAmountSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'পরিমান',
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
-            ),
-            Text(
-              selectedAmount.round().toString(),
-              style: TextStyle(color: Colors.lightGreen[800], fontSize: 18),
-            ),
-          ],
-        ),
-        Slider(
-          value: selectedAmount,
-          min: 1,
-          max: 100,
-          divisions: 99,
-          activeColor: Colors.lightGreen[800],
-          inactiveColor: Colors.grey.shade300,
-          label: selectedAmount.round().toString(),
-          onChanged: (double value) {
-            setState(() {
-              selectedAmount = value;
-            });
-          },
-        ),
-      ],
     );
   }
 

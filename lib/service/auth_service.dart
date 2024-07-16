@@ -3,22 +3,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/helpers/di.dart';
 import 'package:flutter_e_commerce_app/storage/app_pref.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import '../main.dart';
 import 'firestore_service.dart';
 
 class AuthServices {
-  static signupUser(String email, String password, String fullName,String address,String phone_nubmer,String role,String profilePhotoUrl, BuildContext context) async {
+  static signupUser(String email, String password, String fullName,String address,String phone_nubmer, BuildContext context) async {
     try {
-      EasyLoading.show(status: "Loading...");
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
       await FirebaseAuth.instance.currentUser!.updateDisplayName(fullName);
       await FirebaseAuth.instance.currentUser!.updateEmail(email);
-      await FirestoreServices.saveUser(fullName, email,password, userCredential.user!.uid, address,phone_nubmer, role,profilePhotoUrl );
-      EasyLoading.dismiss();
+      await FirestoreServices.saveUser(fullName, email,password, userCredential.user!.uid, address,phone_nubmer );
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration Successful')));
       await instance<AppPreferences>().storeUserId(userCredential.user!.uid);
       await instance<AppPreferences>().saveCredentials(email, password);
@@ -41,15 +38,16 @@ class AuthServices {
     }
   }
 
-  static Future<bool> signinUser(String email, String password, BuildContext context) async {
+  static signinUser(String email, String password, BuildContext context) async {
     try {
-      EasyLoading.show(status: "Signing In...");
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      EasyLoading.dismiss();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('You are Logged in')));
 
-      return true;
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+          const HomePage()), (Route<dynamic> route) => false);
 
 
     } on FirebaseAuthException catch (e) {
@@ -61,6 +59,5 @@ class AuthServices {
             .showSnackBar(const SnackBar(content: Text('Password did not match')));
       }
     }
-    return false;
   }
 }

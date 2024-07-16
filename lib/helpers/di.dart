@@ -16,6 +16,9 @@ Future<void> initAppModule() async {
   instance.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
   instance.registerLazySingleton<AppPreferences>(() => AppPreferences(instance<SharedPreferences>()));
 
+  // Initialize NetworkInfo
+  instance.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(InternetConnectionChecker()));
+
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

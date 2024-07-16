@@ -4,20 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_e_commerce_app/pages/filter_product_page.dart';
 import 'package:flutter_e_commerce_app/pages/product_view.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../animation/FadeAnimation.dart';
 import '../components/single_farmer_item.dart';
-import '../helpers/network_info.dart';
 import '../models/farmer_model.dart';
 import '../models/product.dart';
 import '../service/firestore_service.dart';
 
-class ExplorePage extends StatefulWidget {
+class ExplorePage extends StatefulWidget {  
   const ExplorePage({ Key? key }) : super(key: key);
 
   @override
@@ -28,60 +24,45 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   late ScrollController _scrollController;
   bool _isScrolled = false;
   List<dynamic> productList = [];
-
-
+  List<int> size = [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    40,
+    50,
+    80,
+    100,
+  ];
 
   List<Color> colors = [
     Colors.black,
     Colors.purple,
     Colors.lightGreen.shade200,
     Colors.blueGrey,
-    const Color(0xFFFFC1D9),
+    Color(0xFFFFC1D9),
   ];
 
-  int _selectedSize = 0;
-  double selectedAmount = 1.0;
-  late NetworkInfo _networkInfo;
-  var selectedRange = const RangeValues(10.00, 1500.00);
+  // int _selectedColor = 0;
+  int _selectedSize = 1;
+
+  var selectedRange = const RangeValues(150.00, 1500.00);
   late String totalPrice, unitPrice, amount, seller_name;
-  String filterValue = "";
-  String address = "";
 
-
+  
   CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
   CollectionReference forYouRef = FirebaseFirestore.instance.collection("for yourself");
   CollectionReference allProductRef = FirebaseFirestore.instance.collection("All Product");
 
   @override
-  void initState() {
+  void initState() { 
     _scrollController = ScrollController();
-   // _scrollController.addListener(_listenToScrollChange);
-    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
-    _getUserLocations();
+    _scrollController.addListener(_listenToScrollChange);
+    //products();
 
     super.initState();
-  }
-
-
-  void _getUserLocations() async{
-
-    var user = FirebaseAuth.instance.currentUser;
-    if (user != null){
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection("user")
-          .doc(user.uid)
-          .get();
-
-      if (userDoc.exists) {
-        setState(() {
-          address = userDoc.get('address') ?? ''; // Update state
-        });
-      } else {
-        print("User document does not exist");
-      }
-    }
-
-
   }
 
   void _listenToScrollChange() {
@@ -99,309 +80,251 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300.0,
-            elevation: 0,
-            pinned: true,
-            floating: true,
-            stretch: true,
-            backgroundColor: Colors.grey.shade50,
-            flexibleSpace: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final double minExtent = MediaQuery.of(context).padding.top + kToolbarHeight;
-                final double maxExtent = constraints.maxHeight;
-                final double currentExtent = constraints.biggest.height;
-                final double deltaExtent = maxExtent - minExtent;
-                final double t = (1.0 - (currentExtent - minExtent) / deltaExtent).clamp(0.0, 1.0);
+      controller: _scrollController,
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 300.0,
+          elevation: 0,
+          pinned: true,
+          floating: true,
+          stretch: true,
+          backgroundColor: Colors.grey.shade50,
+          flexibleSpace: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double minExtent = MediaQuery.of(context).padding.top + kToolbarHeight;
+              final double maxExtent = constraints.maxHeight;
+              final double currentExtent = constraints.biggest.height;
+              final double deltaExtent = maxExtent - minExtent;
+              final double t = (1.0 - (currentExtent - minExtent) / deltaExtent).clamp(0.0, 0.5);
+              
+              final double logoHeight = lerpDouble(150, 10, t)!;
+              final double fontSize = lerpDouble(20, 10, t)!;
 
-                final double logoHeight = lerpDouble(120, 40, t)!;
-                final double fontSize = lerpDouble(20, 18, t)!;
-
-                return FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: SafeArea(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return SingleChildScrollView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: IntrinsicHeight(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    height: logoHeight,
-                                    margin: const EdgeInsets.only(bottom: 8),
-                                    child: Image.asset(
-                                      'assets/images/logo.png',
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                  Text(
-                                    "কৃষিতে আপনাকে স্বাগতম",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: fontSize,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
+              return FlexibleSpaceBar(
+                centerTitle: true,
+                title: SafeArea(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.asset("assets/images/background.png", fit: BoxFit.cover),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.3),
-                            ],
+                          child: IntrinsicHeight(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 1),
+                                  height: logoHeight,
+                                  margin: const EdgeInsets.only(bottom: 2),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                Text(
+                                  "কৃষিতে আপনাকে স্বাগতম",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+                      );
+                    },
+                  ),
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset("assets/images/background.png", fit: BoxFit.cover),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.3),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          bottom: AppBar(
+            toolbarHeight: 70,
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            title: Row(
+              children: [
+                Expanded(
+                  child: FadeAnimation(1.4, Container(
+                    height: 50,
+                    child: TextField(
+                      readOnly: true,
+                      cursorColor: Colors.grey,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: const Icon(Icons.search, color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none
+                        ),
+                        hintText: "আপনার পছন্দের পণ্যটি বাছাই করুন",
+                        hintStyle: const TextStyle(fontSize: 14, color: Colors.black),
+                      ),
+                    ),
+                  )),
+                ),
+                const SizedBox(width: 10),
+                FadeAnimation(1.5, Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      showFilterModal();
+                    },
+                    icon: const Icon(Icons.filter_list, color: Colors.black, size: 30,),
+                  ),
+                ))
+              ],
+            ),
+          ),
+        ),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            Container(
+              padding: const EdgeInsets.only(top: 20, left: 20),
+              color: Colors.white,
+              height: 330,
+              child: Column(
+                children: [
+                  FadeAnimation(1.4, const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('বহুল প্রচলিত পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20.0),
+                        child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                      ),
+                    ],
+                  )),
+                  const SizedBox(height: 10,),
+                  Expanded(
+                    child: StreamBuilder(
+                      stream: mostPopularRef.snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
+                        if(stramSnapShot.hasData){
+                          return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: stramSnapShot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                        final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
+                        return productCart(documentSnapshot);
+                        });
+                        };
+                        return const Center(child: CircularProgressIndicator(),);
+                      },
+                    )
+                  )
+                ]
+              )
+            ),
+            Container(
+                color: Colors.white,
+              padding: const EdgeInsets.only(top: 20, left: 20),
+              height: 180,
+              child: Column(
+                children: [
+                  FadeAnimation(1.4, const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('আপনার জন্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20.0),
+                        child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                      ),
+                    ],
+                  )),
+                  const SizedBox(height: 10,),
+                  Expanded(
+                    child: StreamBuilder(
+                      stream: forYouRef.snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
+                        if(stramSnapShot.hasData){
+                          return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: stramSnapShot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                final DocumentSnapshot forYoudocumentSnapshot = stramSnapShot.data!.docs[index];
+                                return forYou(forYoudocumentSnapshot);
+                              }
+                          );
+                        }
+                        return const Center(child: CircularProgressIndicator(),);
+                      },
+                    )
+                  )
+                ]
+              )
+            ),
+            Container(
+                color: Colors.white,
+              padding: const EdgeInsets.only(top: 20, left: 20),
+              height: 330,
+              child: Column(
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('নতুন পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      Padding(
+                        padding: EdgeInsets.only(right: 20.0),
+                        child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
                       ),
                     ],
                   ),
-                );
-              },
-            ),
-            bottom: AppBar(
-              toolbarHeight: 70,
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              title: Row(
-                children: [
+                  const SizedBox(height: 10,),
                   Expanded(
-                    child: FadeAnimation(1.4, Container(
-                      height: 50,
-                      child: TextField(
-                        readOnly: false,
-                        onChanged: (value){
-                          filterValue = value;
-                          setState(() {
-
-                          });
-                        },
-                        cursorColor: Colors.grey,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                          filled: true,
-                          fillColor: Colors.white,
-                          prefixIcon: const Icon(Icons.search, color: Colors.black),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide.none
-                          ),
-                          hintText: "আপনার পছন্দের পণ্যটি বাছাই করুন",
-                          hintStyle: const TextStyle(fontSize: 14, color: Colors.black),
-                        ),
-                      ),
-                    )),
-                  ),
-                  const SizedBox(width: 10),
-                  FadeAnimation(1.5, Container(
-                    height: 50,
-                    width: 50,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10)
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        showFilterModal();
+                    child: StreamBuilder(
+                      stream: allProductRef.snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
+                        if(stramSnapShot.hasData){
+                          return ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: stramSnapShot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
+                                return productCart(documentSnapshot);
+                              });
+                        };
+                        return const Center(child: CircularProgressIndicator(),);
                       },
-                      icon: const Icon(Icons.filter_list, color: Colors.black, size: 30,),
-                    ),
-                  ))
-                ],
-              ),
+                    )
+                  )
+                ]
+              )
             ),
-          ),
-
-          SliverList(
-            delegate: SliverChildListDelegate([
-
-            filterValue.isNotEmpty ?  ShowFilterProduct(filterValue, context, address) :
-
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                        padding: const EdgeInsets.only(top: 20, left: 20),
-                        color: Colors.white,
-                        height: 330,
-                        child: Column(
-                            children: [
-                              FadeAnimation(1.4, const Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('বহুল প্রচলিত পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
-                                  ),
-                                ],
-                              )),
-                              const SizedBox(height: 10,),
-                              Expanded(
-                                  child: StreamBuilder(
-                                    stream: address.isNotEmpty ?mostPopularRef
-                                        .where('locations', arrayContains: address) // Use arrayContains instead of isEqualTo
-                                        .snapshots() : mostPopularRef.snapshots(),
-                                    builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
-                                      if (streamSnapShot.hasData) {
-                                        if (streamSnapShot.data!.docs.isEmpty) {
-                                          return Center(child: Text("No items found")); // Optional: Handle empty state
-                                        }
-                                        return ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: streamSnapShot.data!.docs.length,
-                                          itemBuilder: (context, index) {
-                                            final DocumentSnapshot documentSnapshot =
-                                            streamSnapShot.data!.docs[index];
-                                            return productCart(documentSnapshot, context);
-                                          },
-                                        );
-                                      }
-                                      return const Center(child: CircularProgressIndicator());
-                                    },
-                                  )
-                              )
-                            ]
-                        )
-                    ),
-                    Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.only(top: 20, left: 20),
-                        height: 180,
-                        child: Column(
-                            children: [
-                              FadeAnimation(1.4, const Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('আপনার জন্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
-                                  ),
-                                ],
-                              )),
-                              const SizedBox(height: 10,),
-                              Expanded(
-                                  child: StreamBuilder(
-                                    stream:address.isNotEmpty ? forYouRef.where('locations', arrayContains: address) // Filter by address in the 'locations' array
-                                        .snapshots() : forYouRef.snapshots(),
-                                    builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
-                                      if (streamSnapShot.connectionState == ConnectionState.waiting) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-
-                                      if (streamSnapShot.hasError) {
-                                        return Center(child: Text("Something went wrong: ${streamSnapShot.error}"));
-                                      }
-
-                                      if (streamSnapShot.hasData) {
-                                        final documents = streamSnapShot.data!.docs;
-
-                                        if (documents.isEmpty) {
-                                          return const Center(child: Text("No items available"));
-                                        }
-
-                                        return ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: documents.length,
-                                          itemBuilder: (context, index) {
-                                            final DocumentSnapshot forYouDocumentSnapshot = documents[index];
-                                            return forYou(forYouDocumentSnapshot);
-                                          },
-                                        );
-                                      }
-
-                                      return const Center(child: CircularProgressIndicator());
-                                    },
-                                  )
-                              )
-                            ]
-                        )
-                    ),
-                    Container(
-                        color: Colors.white,
-                        padding: const EdgeInsets.only(top: 20, left: 20),
-                        height: 330,
-                        child: Column(
-                            children: [
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('নতুন পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10,),
-                              Expanded(
-                                  child: StreamBuilder(
-                                    stream: address.isNotEmpty ? allProductRef.where('locations', arrayContains: address) // Filter by address in the 'locations' array
-                                        .snapshots() : allProductRef.snapshots(),
-                                    builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
-                                      if (streamSnapShot.connectionState == ConnectionState.waiting) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-
-                                      if (streamSnapShot.hasError) {
-                                        return Center(child: Text("Something went wrong: ${streamSnapShot.error}"));
-                                      }
-
-                                      if (streamSnapShot.hasData) {
-                                        final documents = streamSnapShot.data!.docs;
-
-                                        if (documents.isEmpty) {
-                                          return const Center(child: Text("No items available"));
-                                        }
-
-                                        return ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: documents.length,
-                                          itemBuilder: (context, index) {
-                                            final DocumentSnapshot documentSnapshot = documents[index];
-                                            return productCart(documentSnapshot, context);
-                                          },
-                                        );
-                                      }
-
-                                      return const Center(child: CircularProgressIndicator());
-                                    },
-                                  )
-
-                              )
-                            ]
-                        )
-                    ),
-                  ],
-                )
-
-            ]),
-          )
-        ]
+          ]),
+        )
+      ]
     );
   }
 
@@ -415,240 +338,14 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     });
   }*/
 
-
-
-  Widget ShowFilterProduct(String filterValue, BuildContext context, String address) {
-    return FutureBuilder(
-      future: _getFilteredProducts(filterValue, address), // Method that returns your filtered products
-      builder: (context, AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show a centered CircularProgressIndicator while waiting for the data
-          return const Padding(
-            padding: EdgeInsets.only(top: 52.0),
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
-        } else if (snapshot.hasError) {
-          // Show an error message in the center if there's an error
-          return Center(
-            child: Text('Error: ${snapshot.error}'),
-          );
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.only(top: 52.0),
-            child: Center(
-              child: Text(
-                'No products found',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          );
-        }
-
-        // If there are filtered products, display them using AlignedGridView
-        final filteredProducts = snapshot.data!;
-        return AlignedGridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true, // Avoid expanding beyond its content
-          physics: const NeverScrollableScrollPhysics(), // Let the Sliver handle the scrolling
-          itemCount: filteredProducts.length,
-          itemBuilder: (context, index) {
-            return FilterproductCart(filteredProducts[index], context);
-          },
-        );
-      },
-    );
-  }
-
-
-  Widget FilterproductCart(DocumentSnapshot<Object?> documentSnapshot, BuildContext context) {
-    return FadeAnimation(
-      1.5,
-      GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductViewPage(documentSnapshot: documentSnapshot),
-            ),
-          );
-        },
-        child: Stack(
-          children: [
-            Container(
-              width: MediaQuery.sizeOf(context).width,
-              margin: const EdgeInsets.only( bottom: 16, right: 8, left: 8),
-              decoration: BoxDecoration(
-                color: Colors.white, // Set background to white
-                borderRadius: BorderRadius.circular(8), // Rounded corners
-                border: Border.all(
-                  color: Colors.grey.shade300, // Border color
-                  width: 2, // 2dp stroke
-                ),
-              ),
-              padding: const EdgeInsets.all(8),
-              child: Card(
-                elevation: 0, // Set elevation to 0 since we have a border
-                color: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 8),
-                    Container(
-                      height: 80,
-                      width: MediaQuery.sizeOf(context).width,
-                      margin: const EdgeInsets.all(8),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          documentSnapshot['product_img'],
-                          fit: BoxFit.fill,
-                          height: 100,
-                          width: 100,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: MediaQuery.sizeOf(context).width,
-                      margin: const EdgeInsets.only(left: 8, right: 8),
-                      child: Text(
-                        documentSnapshot['product_name'],
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                        softWrap: true,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            documentSnapshot['brand'],
-                            style: TextStyle(
-                              color: Colors.lightGreen.shade400,
-                              fontSize: 14,
-                            ),
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-
-                        ],
-                      ),
-
-
-                    ),
-                    Text(
-                      "\৳ ${documentSnapshot['product_price'].toString()}.00",
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Top-right positioned card icon
-            Positioned(
-              right: 4, // Adjust positioning
-              top: 4, // Adjust positioning
-              child: MaterialButton(
-                color: Colors.black,
-                minWidth: 30,
-                height: 30,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                onPressed: () {
-                  addToCartModal(documentSnapshot, context);
-                },
-                padding: const EdgeInsets.all(5),
-                child: const Icon(
-                  Icons.shopping_cart,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-
-  Future<List<DocumentSnapshot>> _getFilteredProducts(String filterValue, String address) async {
-    // Fetch snapshots from all collections
-    QuerySnapshot mostPopularSnapshot = await FirebaseFirestore.instance.collection('Most Popular').get();
-    QuerySnapshot forYourselfSnapshot = await FirebaseFirestore.instance.collection('for yourself').get();
-    QuerySnapshot allProductSnapshot = await FirebaseFirestore.instance.collection('All Product').get();
-
-    // Combine all snapshots into a list
-    List<QuerySnapshot> snapshots = [mostPopularSnapshot, forYourselfSnapshot, allProductSnapshot];
-    List<DocumentSnapshot> filteredProducts = [];
-
-    // Convert the filterValue into a set of keywords
-    List<String> filterKeywords = filterValue.toLowerCase().split(' ');
-
-    for (var snapshot in snapshots) {
-      for (var doc in snapshot.docs) {
-        final product = doc.data() as Map<String, dynamic>;
-
-        String productName = product['product_name']?.toString().toLowerCase() ?? '';
-        String brandName = product['brand']?.toString().toLowerCase() ?? '';
-
-        // Combine product name and brand into one string for easier keyword matching
-        String combinedText = '$productName $brandName';
-
-        // Check if any of the filter keywords are present in the combined text
-        bool matchFound = filterKeywords.any((keyword) => combinedText.contains(keyword));
-
-        bool locationMatches = true;
-        if (address != "") {
-          List<dynamic> locations = product['locations'] ?? [];
-          locationMatches = locations.contains(address);
-        }
-
-        // Add the document if the keyword matches and, if address is provided, the location matches
-        if (matchFound && locationMatches) {
-          filteredProducts.add(doc);
-        }
-      }
-    }
-
-    return filteredProducts;
-  }
-
-
-
-
-
-  productCart(DocumentSnapshot<Object?> documentSnapshot, BuildContext context) {
+  productCart(DocumentSnapshot<Object?> documentSnapshot) {
     return AspectRatio(
       aspectRatio: 1 / 1,
       child: FadeAnimation(
         1.5,
         GestureDetector(
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: documentSnapshot,)));
+             Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: documentSnapshot,)));
           },
           child: Container(
             margin: const EdgeInsets.only(right: 20, bottom: 16),
@@ -693,7 +390,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                             borderRadius: BorderRadius.circular(50),
                           ),
                           onPressed: () {
-                            addToCartModal(documentSnapshot,context);
+                            addToCartModal(documentSnapshot);
                           },
                           padding: const EdgeInsets.all(5),
                           child: const Center(
@@ -821,6 +518,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(height: 10),
                       Flexible(
                         child: Text(
                           "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',
@@ -849,121 +547,201 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
       ),
       builder: (context) {
         return StatefulBuilder(
-            builder: (context, setState) {
-              return Container(
-                padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-                height: MediaQuery.of(context).size.height * 0.8,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Filter', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                        MaterialButton(
-                          onPressed: () {
-                            Navigator.pop(context);
+          builder: (context, setState) {
+            return Container(
+              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Filter', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      MaterialButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        minWidth: 40,
+                        height: 40,
+                        color: Colors.grey.shade300,
+                        elevation: 0,
+                        padding: const EdgeInsets.all(0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50)
+                        ),
+                        child: const Icon(Icons.close, color: Colors.black,),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 20,),
+                  const Text('পরিমান', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                  const SizedBox(height: 10,),
+                  Container(
+                    height: 60,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: size.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedSize = index;
+                            });
                           },
-                          minWidth: 40,
-                          height: 40,
-                          color: Colors.grey.shade300,
-                          elevation: 0,
-                          padding: const EdgeInsets.all(0),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50)
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 500),
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              color: _selectedSize == index ? Colors.lightGreen[800] : Colors.grey.shade200,
+                              shape: BoxShape.circle
+                            ),
+                            width: 40,
+                            height: 40,
+                            child: Center(
+                              child: Text(size[index].toString(), style: TextStyle(color: _selectedSize == index ? Colors.white : Colors.black, fontSize: 15),),
+                            ),
                           ),
-                          child: const Icon(Icons.close, color: Colors.black,),
-                        )
-                      ],
+                        );
+                      },
                     ),
-                    // Slider Price Renge filter
-                    const SizedBox(height: 20,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Price Range', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text('\৳ ${selectedRange.start.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12),),
-                            Text(" - ", style: TextStyle(color: Colors.grey.shade500)),
-                            Text('\৳ ${selectedRange.end.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12),),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10,),
-                    RangeSlider(
-                        values: selectedRange,
-                        min: 0.00,
-                        max: 2000.00,
-                        divisions: 100,
-                        inactiveColor: Colors.grey.shade300,
-                        activeColor: Colors.lightGreen[800],
-                        labels: RangeLabels('\৳ ${selectedRange.start.toStringAsFixed(2)}', '\৳ ${selectedRange.end.toStringAsFixed(2)}',),
-                        onChanged: (RangeValues values) {
-                          setState(() => selectedRange = values);
-                        }
-                    ),
-                    const SizedBox(height: 20,),
-                    button('Filter', () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FilterProductPage(rangeValues: selectedRange, address: address),
-                        ),
-                      );
-                    })
-                  ],
-                ),
-              );
-            }
+                  ),
+                  // Slider Price Renge filter
+                  const SizedBox(height: 20,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Price Range', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text('\৳ ${selectedRange.start.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12),),
+                          Text(" - ", style: TextStyle(color: Colors.grey.shade500)),
+                          Text('\৳ ${selectedRange.end.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12),),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10,),
+                  RangeSlider(
+                    values: selectedRange, 
+                    min: 0.00,
+                    max: 2000.00,
+                    divisions: 100,
+                    inactiveColor: Colors.grey.shade300,
+                    activeColor: Colors.lightGreen[800],
+                    labels: RangeLabels('\৳ ${selectedRange.start.toStringAsFixed(2)}', '\৳ ${selectedRange.end.toStringAsFixed(2)}',),
+                    onChanged: (RangeValues values) {
+                      setState(() => selectedRange = values);
+                    }
+                  ),
+                  const SizedBox(height: 20,),
+                  button('Filter', () {
+
+                  })
+                ],
+              ),
+            );
+          }
         );
       },
     );
   }
 
-  Future<void> addToCartModal(DocumentSnapshot<Object?> documentSnapshot, BuildContext mContext) async {
+  addToCartModal(DocumentSnapshot<Object?> documentSnapshot) async{
+
     List<FarmerModel> farmerList = [];
     int? selectedFarmerIndex;
-    selectedAmount = 1.0;
 
     List<dynamic> productOwners = documentSnapshot['product_owner'];
-    farmerList = productOwners.map((owner) => FarmerModel(owner['name'], owner['uId'], false)).toList();
+    farmerList = productOwners.map((owner) => FarmerModel(owner, false)).toList();
+    setState(() {});
+
 
     return showModalBottomSheet(
-      context: mContext,
+      context: context,
+      transitionAnimationController: AnimationController(
+        duration: const Duration(milliseconds: 400),
+        vsync: this,
+      ),
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
-          return Stack(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: 20,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 80, // Add padding to bottom for button space
-                ),
-                child: Column(
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(40.0),
+                  topLeft: Radius.circular(40.0)),
+              color: Colors.white,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildAmountSelector(setState),
+                    const Text(
+                      "পরিমান",
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    Container(
+                      height: 60,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: size.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedSize = index;
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 500),
+                              margin: const EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                color: _selectedSize == index
+                                    ? Colors.lightGreen[800]
+                                    : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                              ),
+                              width: 40,
+                              height: 40,
+                              child: Center(
+                                child: Text(
+                                  size[index].toString(),
+                                  style: TextStyle(
+                                    color: _selectedSize == index
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     Text(
                       'ফারমার লিস্ট :',
                       style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
                     ),
-                    const SizedBox(height: 10),
-                    Expanded( // Ensures ListView takes available space
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: farmerList.length * 50.0,
                       child: ListView.builder(
                         itemCount: farmerList.length,
-                        shrinkWrap: true,
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true, // Allows the ListView to wrap its content
+                        physics: const NeverScrollableScrollPhysics(), // Disables scrolling
                         itemBuilder: (context, index) {
                           return SingleFarmerItem(
                             index: index,
@@ -982,63 +760,46 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   ],
                 ),
-              ),
-              Positioned(
-                bottom: 20, // Position the button at the bottom
-                left: 20,
-                right: 20,
-                child: button('কার্টে যোগ করুন', () async {
-                  // Your add to cart logic
+                button('কার্টে যোগ করুন', () async{
+
+                  User? userCredential = await FirebaseAuth.instance
+                      .currentUser;
+                  totalPrice = ((documentSnapshot['product_price'] as int)*
+                      size[_selectedSize]).toString();
+
+                  await FirestoreServices.addItemToCart(
+                      userCredential!.uid.toString(),
+                      documentSnapshot['product_name'],
+                      documentSnapshot['brand'],
+                      documentSnapshot['product_price'],
+                      documentSnapshot['product_img'],
+                      _selectedSize.toString(),
+                      totalPrice,
+                      farmerList[selectedFarmerIndex!].farmerName,
+                      context);
+
+                  Navigator.pop(context);
+
+                  //show a snackbar when an item is added to the cart
+                  final snackbar = SnackBar(
+                    content: const Text("পণ্যটি কার্টে যোগ করা হয়েছে"),
+                    duration: const Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      onPressed: () {},
+                    ),
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
                 }),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
     );
+
   }
-
-
-
-
-
-
-
-  Widget _buildAmountSelector(void Function(void Function()) setState) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'পরিমান',
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
-            ),
-            Text(
-              selectedAmount.round().toString(),
-              style: TextStyle(color: Colors.lightGreen[800], fontSize: 18),
-            ),
-          ],
-        ),
-        Slider(
-          value: selectedAmount,
-          min: 1,
-          max: 100,
-          divisions: 99,
-          activeColor: Colors.lightGreen[800],
-          inactiveColor: Colors.grey.shade300,
-          label: selectedAmount.round().toString(),
-          onChanged: (double value) {
-            setState(() {
-              selectedAmount = value;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
 
   button(String text, Function onPressed) {
     return MaterialButton(
@@ -1047,7 +808,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
       elevation: 0,
       splashColor: Colors.lightGreen[700],
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10)
+        borderRadius: BorderRadius.circular(10)
       ),
       color: Colors.lightGreen[800],
       child: Center(

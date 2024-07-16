@@ -2,11 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_e_commerce_app/pages/singup_screen.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../Utils/colors.dart';
-import '../helpers/network_info.dart';
-import '../main.dart';
 import '../service/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -19,14 +15,6 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  late NetworkInfo _networkInfo;
-
-
-  @override
-  void initState() {
-    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,31 +35,25 @@ class _SignInScreenState extends State<SignInScreen> {
             padding: const EdgeInsets.only(top: 48.0),
             child: ListView(
               children: [
-                // Logo
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 200, // Adjust as needed
-                  width: 200, // Adjust as needed
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.002),
+                SizedBox(height: MediaQuery.sizeOf(context).height * 0.03),
                 Text(
                   "Hello Again!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 22,
+                    fontSize: 28,
                     color: textColor1,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
                 Text(
-                  "কৃষিতে আপনাকে স্বাগতম",
+                  "Wellcome back vou've\nbeen missed!",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18, color: textColor2, height: 1.2),
                 ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-                // Username and password fields
-                myTextField("Enter Email", Colors.white, usernameController),
+                SizedBox(height: MediaQuery.sizeOf(context).height * 0.08),
+                // for username and password
+                myTextField("Enter username", Colors.white, usernameController),
                 myTextField("Password", Colors.black26, passwordController),
                 Align(
                   alignment: Alignment.centerRight,
@@ -85,46 +67,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                SizedBox(height: MediaQuery.sizeOf(context).height * 0.04),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Column(
                     children: [
-                      // Sign in button
+                      // for sign in button
                       GestureDetector(
-                        onTap: () async{
-
-                          if(!await _networkInfo.isConnected){
-                            const snackbar = SnackBar(
-                              content: Text("No internet available!"),
-                              duration: Duration(seconds: 5),
-                            );
-
-                            ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                            return;
-                          }
-
-                          if(usernameController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email is Required field to login!')));
-                            return;
-                          }
-
-                          if(passwordController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password is Required field to login!')));
-                            return;
-                          }
-
-                        var isSignIn = await  AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
-                          if(isSignIn){
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(content: Text('You are Logged in')));
-
-                            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
-                            const HomePage()), (Route<dynamic> route) => false);
-                          }
+                        onTap: () {
+                          AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
                         },
                         child: Container(
-                          width: MediaQuery.of(context).size.width,
+                          width: MediaQuery.sizeOf(context).width,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
                             color: buttonColor,
@@ -142,7 +96,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.07),
+                      SizedBox(height: MediaQuery.sizeOf(context).height * 0.07),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpScreen()));

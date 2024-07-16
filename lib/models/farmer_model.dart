@@ -5,16 +5,14 @@ String farmerModel(FarmerModel farmerModel) => json.encode(farmerModel.toJson())
 
 class FarmerModel {
   final String farmerName;
-  final String farmerId;
   bool isFarmerSelected;
 
-  FarmerModel( this.farmerName, this.farmerId, this.isFarmerSelected);
+  FarmerModel(this.farmerName, this.isFarmerSelected);
 
   // Convert a FarmerModel object into a JSON map.
   Map<String, dynamic> toJson() {
     return {
       'farmerName': farmerName,
-      'farmerId': farmerId,
       'isFarmerSelected': isFarmerSelected,
     };
   }
@@ -23,7 +21,6 @@ class FarmerModel {
   factory FarmerModel.fromJson(Map<String, dynamic> json) {
     return FarmerModel(
       json['farmerName'] as String,
-      json['farmerId'] as String,
       json['isFarmerSelected'] as bool,
     );
   }

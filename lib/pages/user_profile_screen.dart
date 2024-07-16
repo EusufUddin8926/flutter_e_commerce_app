@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
-import '../Utils/constant.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -23,14 +22,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   File? _image;
   bool _isEditing = false;
-  bool _isLoading = false;
-  String _selectedAddress = "";
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
-
+    
     fullNameController.addListener(_updateSaveButtonState);
     emailController.addListener(_updateSaveButtonState);
     phoneNumberController.addListener(_updateSaveButtonState);
@@ -43,57 +40,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     emailController.removeListener(_updateSaveButtonState);
     phoneNumberController.removeListener(_updateSaveButtonState);
     addressController.removeListener(_updateSaveButtonState);
-    fullNameController.dispose();
-    emailController.dispose();
-    phoneNumberController.dispose();
-    addressController.dispose();
     super.dispose();
   }
 
   void _updateSaveButtonState() {
-    setState(() {});
+    setState(() {
+      // This empty setState will trigger a rebuild,
+      // which will re-evaluate _canSaveProfile()
+    });
   }
 
   Future<void> _loadUserProfile() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       DocumentSnapshot doc = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
       if (doc.exists) {
         Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
-        if (data != null && mounted) {
+        if (data != null) {
           setState(() {
             userProfile = UserProfile(
               fullName: data['fullName'] ?? '',
               email: data['email'] ?? '',
               phoneNumber: data['phone_number'] ?? '',
               address: data['address'] ?? '',
-              profilePhotoUrl: data['profilePhotoUrl'] ?? '',
+              profilePhotoUrl: data['profilePhotoUrl'] ?? '', 
               type: data['type'] ?? '',
             );
             fullNameController.text = userProfile!.fullName;
             emailController.text = userProfile!.email;
             phoneNumberController.text = userProfile!.phoneNumber;
-            addressController.text = "";
-            _selectedAddress = userProfile!.address;
+            addressController.text = userProfile!.address;
           });
         }
       }
     }
-
-    if(mounted){
-      setState(() {
-        _isLoading = false;
-      });
-    }
-
   }
 
   Future<void> _updateProfile() async {
-
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null && userProfile != null) {
       try {
@@ -106,7 +89,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           'fullName': fullNameController.text,
           'email': emailController.text,
           'phone_number': phoneNumberController.text,
-          'address': _selectedAddress,
+          'address': addressController.text,
           'profilePhotoUrl': photoUrl,
         });
 
@@ -128,45 +111,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<String> _uploadProfilePhoto(String uid) async {
-    // Create a reference to the file location in Firebase Storage
     final Reference storageRef = FirebaseStorage.instance.ref().child('profile_photos/$uid.jpg');
-
-    // Upload the file to Firebase Storage
     final UploadTask uploadTask = storageRef.putFile(_image!);
-
-    // Get the task snapshot
-    final TaskSnapshot taskSnapshot = await uploadTask;
-
-    // Get the download URL
-    final String url = await taskSnapshot.ref.getDownloadURL();
-
+    final TaskSnapshot downloadUrl = await uploadTask;
+    final String url = await downloadUrl.ref.getDownloadURL();
     return url;
   }
 
-
   Future<void> _pickImage() async {
-    if (_isEditing && _image == null) {
-      try {
-        final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-        if (pickedFile != null) {
-          setState(() {
-            _image = File(pickedFile.path);
-          });
-        }
-      } catch (e) {
-        print('Error picking image: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error picking image. Please try again.')),
-        );
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
       }
-    }
+    });
   }
 
   bool _canSaveProfile() {
     return fullNameController.text.isNotEmpty &&
         emailController.text.isNotEmpty &&
         phoneNumberController.text.isNotEmpty &&
-        _selectedAddress.isNotEmpty;
+        addressController.text.isNotEmpty;
   }
 
   void _cancelEditing() {
@@ -178,17 +143,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         phoneNumberController.text = userProfile!.phoneNumber;
         addressController.text = userProfile!.address;
         _image = null;
-        _selectedAddress =userProfile!.address;
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    if (userProfile == null) {
       return const Center(child: CircularProgressIndicator());
-    } else if (userProfile == null) {
-      return const Center(child: Text('No profile data available'));
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -203,18 +165,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               icon: Icon(_isEditing ? Icons.save : Icons.edit),
               onPressed: _isEditing
                   ? () {
-                if (_canSaveProfile()) {
-                  _updateProfile();
-                }else{
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All Field are requird!')));
-                  return;
-                }
-              }
+                      if (_canSaveProfile()) {
+                        _updateProfile();
+                      }
+                    }
                   : () {
-                setState(() {
-                  _isEditing = !_isEditing;
-                });
-              },
+                      setState(() {
+                        _isEditing = !_isEditing;
+                      });
+                    },
             ),
             IconButton(
               icon: const Icon(Icons.logout),
@@ -225,7 +184,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ],
         ),
         body: ListView(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 42),
+          padding: const EdgeInsets.all(16.0),
           children: [
             Center(
               child: GestureDetector(
@@ -260,86 +219,51 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             const SizedBox(height: 16),
             if (_isEditing) ...[
               _buildTextField(fullNameController, 'Full Name'),
-              _buildTextField(emailController, 'Email', inputType: TextInputType.emailAddress),
-              _buildTextField(phoneNumberController, 'Phone Number', inputType: TextInputType.phone),
-             // _buildTextField(addressController, 'Address'),
-              Column(
-                children: [
-                  // Autocomplete Text Field
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text.isEmpty) {
-                        return const Iterable<String>.empty();
-                      } else {
-                        return Constant.districtList.where((word) => word
-                            .toLowerCase()
-                            .contains(textEditingValue.text.toLowerCase()));
-                      }
-                    },
-                    onSelected: (selectedString) {
-                      setState(() {
-                        _selectedAddress = selectedString; // Always set the selected address
-                        addressController.clear();
-                      });
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      controller.text = "";
-
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: InputDecoration(
-                          labelText: "Search Address",
-                          border: const OutlineInputBorder(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 4),
-                  // Chips Display
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      children: _selectedAddress != ""
-                          ? [
-                        Chip(
-                          label: Text(_selectedAddress),
-                          onDeleted: () {
-                            setState(() {
-                              _selectedAddress = ""; // Clear the selected address
-                            });
-                          },
-                        ),
-                      ]
-                          : [],
-                    ),
-                  ),
-                ],
-              ),
+              _buildTextField(emailController, 'Email'),
+              _buildTextField(phoneNumberController, 'Phone Number'),
+              _buildTextField(addressController, 'Address'),
             ] else ...[
-              _buildDisplayTile('Full Name', userProfile!.fullName, Icons.person),
-              _buildDisplayTile('Email', userProfile!.email, Icons.email),
-              _buildDisplayTile('Phone Number', userProfile!.phoneNumber, Icons.phone),
-              _buildDisplayTile('Address', userProfile!.address, Icons.home),
-              _buildDisplayTile('Type', userProfile!.type, Icons.account_box_outlined),
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text('Full Name'),
+                subtitle: Text(userProfile!.fullName),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.email),
+                title: const Text('Email'),
+                subtitle: Text(userProfile!.email),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.phone),
+                title: const Text('Phone Number'),
+                subtitle: Text(userProfile!.phoneNumber),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: const Text('Address'),
+                subtitle: Text(userProfile!.address),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.account_box_outlined),
+                title: const Text('Type'),
+                subtitle: Text(userProfile!.type),
+              ),
             ],
-            const Divider(),
-            _buildTypeSpecificWidgets(),
           ],
         ),
       );
     }
   }
 
-  Widget _buildTextField(TextEditingController controller, String labelText, {TextInputType? inputType}) {
+  Widget _buildTextField(TextEditingController controller, String labelText) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
-        keyboardType: inputType,
         decoration: InputDecoration(
           labelText: labelText,
           border: const OutlineInputBorder(),
@@ -347,56 +271,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
   }
-
-  Widget _buildDisplayTile(String title, String value, IconData icon) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(value),
-    );
-  }
-
-  Widget _buildTypeSpecificWidgets() {
-    if (userProfile == null) return Container();
-    switch (userProfile!.type) {
-      case 'consumer':
-        return _buildConsumerWidgets();
-      case 'farmer':
-        return _buildFarmerWidgets();
-      case 'agent':
-        return _buildAgentWidgets();
-      default:
-        return Container();
-    }
-  }
-
-  Widget _buildConsumerWidgets() {
-    return Container();
-  }
-
-  Widget _buildFarmerWidgets() {
-    return Container();
-  }
-
-  Widget _buildAgentWidgets() {
-    return Container();
-  }
 }
 
-class UserProfile {
-  final String fullName;
-  final String email;
-  final String phoneNumber;
-  final String address;
-  final String profilePhotoUrl;
-  final String type;
 
-  UserProfile({
-    required this.fullName,
-    required this.email,
-    required this.phoneNumber,
-    required this.address,
-    required this.profilePhotoUrl,
-    required this.type,
-  });
-}
+

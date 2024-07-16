@@ -1,9 +1,38 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_e_commerce_app/models/order_model.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class Product {
+  final String name;
+  final String brand;
+  final String details;
+  final String id;
+  final String imageURL;
+  final String owner;
+  final int price;
+
+  Product({
+    required this.name,
+    required this.brand,
+    required this.details,
+    required this.id,
+    required this.imageURL,
+    required this.owner,
+    required this.price,
+  });
+
+  factory Product.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map;
+    return Product(
+      name: data['product_name'] ?? '',
+      brand: data['brand'] ?? '',
+      details: data['product_details'] ?? '',
+      id: data['product_id'] ?? '',
+      imageURL: data['product_img'] ?? '',
+      owner: data['product_owner'][0] ?? '',
+      price: data['product_price'] ?? 0,
+    );
+  }
+}
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({Key? key}) : super(key: key);
@@ -13,64 +42,26 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
-  String selectedStatus = 'All';
-
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: DropdownButton<String>(
-          value: selectedStatus,
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedStatus = newValue!;
-            });
-          },
-          items: <String>['All', 'On the way', 'Delivered', 'Order taken']
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-        ),
-      ),
-      body: user == null
-          ? const Center(child: Text('No user is currently logged in.'))
-          : StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('Order')
-            .where('customerId', isEqualTo: user.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('All Product').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching orders.'));
+          if (!snapshot.hasData) {
+            return Center(child: Text("No products found"));
           }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No orders found.'));
-          }
-
-          List<OrderModel> orders = snapshot.data!.docs.map((doc) {
-            return OrderModel.fromJson(doc.data() as Map<String, dynamic>);
-          }).toList();
-
-          List<OrderModel> filteredOrders = selectedStatus == 'All'
-              ? orders
-              : orders.where((order) => order.orderStatus == selectedStatus).toList();
+          final products = snapshot.data!.docs.map((doc) => Product.fromFirestore(doc)).toList();
 
           return ListView.builder(
-            itemCount: filteredOrders.length,
+            itemCount: products.length,
             itemBuilder: (context, index) {
-              return OrderItem(orderModel: filteredOrders[index]);
+              return ProductItem(product: products[index]);
             },
           );
         },
@@ -79,61 +70,17 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 }
 
-class OrderItem extends StatefulWidget {
-  final OrderModel orderModel;
+class ProductItem extends StatelessWidget {
+  final Product product;
 
-  const OrderItem({super.key, required this.orderModel});
-
-  @override
-  _OrderItemState createState() => _OrderItemState();
-}
-
-class _OrderItemState extends State<OrderItem> {
-  double _rating = 0;
-  bool _ratingSubmitted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _rating = widget.orderModel.orderRating;
-    _ratingSubmitted = widget.orderModel.orderRating > 0;
-  }
-
-  Future<void> _submitRating() async {
-    setState(() {
-      _ratingSubmitted = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('Order')
-          .doc(widget.orderModel.orderId)
-          .update({'orderRating': _rating});
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Rating submitted'),
-        ),
-      );
-    } catch (e) {
-      setState(() {
-        _ratingSubmitted = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to submit rating: $e'),
-        ),
-      );
-    }
-  }
+  ProductItem({required this.product});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -141,16 +88,16 @@ class _OrderItemState extends State<OrderItem> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.orderModel.productName,
-                  style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  product.name,
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'orderID: ${widget.orderModel.orderId}',
-                  style: const TextStyle(fontSize: 16.0),
+                  'Quantity: ${product.id}',
+                  style: TextStyle(fontSize: 16.0),
                 ),
               ],
             ),
-            const SizedBox(height: 8.0),
+            SizedBox(height: 8.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -158,81 +105,21 @@ class _OrderItemState extends State<OrderItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Owner: ${widget.orderModel.sellerName}'),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                Text(
-                  'Total Price: \$${widget.orderModel.total_price}',
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Status: ${widget.orderModel.orderStatus}'),
-                      const SizedBox(height: 4.0),
-                      TweenAnimationBuilder<double>(
-                        tween: Tween<double>(
-                          begin: 0,
-                          end: getStatusProgress(widget.orderModel.orderStatus),
-                        ),
-                        duration: const Duration(seconds: 1),
-                        builder: (context, value, child) {
-                          return LinearProgressIndicator(
-                            value: value,
-                          );
-                        },
+                      Text('Status: ${product.details}'), // Assuming product details represent status
+                      SizedBox(height: 4.0),
+                      LinearProgressIndicator(
+                        value: getStatusProgress(product.details), // Change this to actual status field if available
                       ),
                     ],
                   ),
                 ),
+                SizedBox(width: 16.0),
+                Text(
+                  'Total Price: \$${product.price}',
+                  style: TextStyle(fontSize: 16.0),
+                ),
               ],
             ),
-            if (widget.orderModel.orderStatus == 'Delivered' && !_ratingSubmitted) ...[
-              const SizedBox(height: 8.0),
-              const Text('Rate this product:'),
-              RatingBar.builder(
-                initialRating: _rating,
-                minRating: 1,
-                direction: Axis.horizontal,
-                allowHalfRating: false,
-                itemCount: 5,
-                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                itemBuilder: (context, _) => const Icon(
-                  Icons.star,
-                  color: Colors.amber,
-                ),
-                onRatingUpdate: (rating) {
-                  setState(() {
-                    _rating = rating;
-                  });
-                },
-              ),
-              const SizedBox(height: 8.0),
-              ElevatedButton(
-                onPressed: _submitRating,
-                child: const Text('Submit'),
-              ),
-            ] else if (_ratingSubmitted) ...[
-              const SizedBox(height: 8.0),
-              RatingBarIndicator(
-                rating: _rating,
-                itemBuilder: (context, index) => const Icon(
-                  Icons.star,
-                  color: Colors.amber,
-                ),
-                itemCount: 5,
-                itemSize: 24.0,
-              ),
-            ],
           ],
         ),
       ),
@@ -244,12 +131,11 @@ class _OrderItemState extends State<OrderItem> {
       case 'Delivered':
         return 1.0;
       case 'On the way':
-        return 0.66;
+        return 0.5;
       case 'Order taken':
-        return 0.33;
+        return 0.2;
       default:
         return 0.0;
     }
   }
 }
-

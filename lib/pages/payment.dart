@@ -1,186 +1,377 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_sslcommerz/model/SSLCSdkType.dart';
-import 'package:flutter_sslcommerz/model/SSLCTransactionInfoModel.dart';
-import 'package:flutter_sslcommerz/model/SSLCommerzInitialization.dart';
-import 'package:flutter_sslcommerz/model/SSLCurrencyType.dart';
-import 'package:flutter_sslcommerz/sslcommerz.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-import '../helpers/network_info.dart';
-import '../models/order_model.dart';
-import '../models/product.dart';
-import '../service/firestore_service.dart';
-import 'payment_success.dart'; // Import the PaymentSuccess page
+import 'package:flutter_e_commerce_app/pages/payment_success.dart';
+
+import '../animation/FadeAnimation.dart';
 
 class PaymentPage extends StatefulWidget {
-  final List<Product> cartItems;
-  final double totalPrice;
-
-  const PaymentPage({Key? key, required this.cartItems, required this.totalPrice}) : super(key: key);
+  const PaymentPage({Key? key}) : super(key: key);
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
 }
 
 class _PaymentPageState extends State<PaymentPage> {
-  String? selectedPaymentMethod;
+  int activeCard = 0;
   bool _isLoading = false;
-  TextEditingController addressController = new TextEditingController();
-  late NetworkInfo _networkInfo;
+  bool _showAddressField = false; // State variable to control the visibility of the address field
+  late Timer _timer;
 
+  pay() {
+    setState(() {
+      _isLoading = true;
+    });
 
-  @override
-  void initState() {
-    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
-    super.initState();
+    const oneSec = Duration(seconds: 2);
+    _timer = Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        setState(() {
+          _isLoading = false;
+          timer.cancel();
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
+        });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('পেমেন্ট', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text('পেমেন্ট', style: TextStyle(color: Colors.black)),
+        leading: const BackButton(color: Colors.black),
       ),
       body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const Text('মোট পরিশোধ করতে হবে', style: TextStyle(fontSize: 18)),
-              const SizedBox(height: 10),
-              Text('৳${widget.totalPrice + 100}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 30),
-              const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
+            children: [
+              activeCard == 0
+                  ? FadeAnimation(
+                      1.2,
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 500),
+                        opacity: activeCard == 0 ? 1 : 0,
+                        child: Container(
+                          width: double.infinity,
+                          height: 200,
+                          padding: const EdgeInsets.all(20.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.lightGreen,
+                                Colors.lightGreen.shade800,
+                                Colors.lightGreen.shade900,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "ক্রেডিট/ডেবিট কার্ড",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "**** **** **** 7890",
+                                    style: TextStyle(color: Colors.white, fontSize: 30),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Credit/Debit Card",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      Image.network('https://img.icons8.com/color/2x/mastercard-logo.png',
+                                          height: 50),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : activeCard == 1
+                      ? FadeAnimation(
+                          1.2,
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 500),
+                            opacity: activeCard == 1 ? 1 : 0,
+                            child: Container(
+                              width: double.infinity,
+                              height: 200,
+                              padding: const EdgeInsets.all(30.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.grey.shade200,
+                                    Colors.grey.shade100,
+                                    Colors.grey.shade200,
+                                    Colors.grey.shade300,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Image.asset('assets/images/cod.png', height: 50),
+                                      const SizedBox(height: 30),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          const Text(
+                                            "Cash on delivery",
+                                            style: TextStyle(color: Colors.black, fontSize: 18),
+                                          ),
+                                          Image.asset('assets/images/cod.png', height: 35),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : FadeAnimation(
+                          1.2,
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 500),
+                            opacity: activeCard == 2 ? 1 : 0,
+                            child: Container(
+                              width: double.infinity,
+                              height: 200,
+                              padding: const EdgeInsets.all(30.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.grey.shade200,
+                                    Colors.grey.shade100,
+                                    Colors.grey.shade200,
+                                    Colors.grey.shade300,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Image.asset('assets/images/bkash.png', height: 50),
+                                      const SizedBox(height: 30),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          const Text(
+                                            "Bkash",
+                                            style: TextStyle(color: Colors.black, fontSize: 18),
+                                          ),
+                                          Image.asset('assets/images/bkash.png', height: 35),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+              const SizedBox(height: 50),
+              FadeAnimation(
+                1.2,
+                const Text(
+                  "পেমেন্ট পদ্ধতি",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
               const SizedBox(height: 20),
-              buildPaymentOption(context, "1",'ক্যাশ ওন ডেলিভারি', Icons.account_balance),
-              buildPaymentOption(context, "2", 'অনলাইন পেমেন্ট', Icons.money),
-             /* buildPaymentOption(context, 'ক্রেডিট কার্ড', Icons.credit_card),
-              buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),*/
-              const SizedBox(height: 30),
-              const Text('ঠিকানা দিন', style: TextStyle(fontSize: 18)),
-              SizedBox(height: 8,),
-              TextField(
-                controller: addressController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'ঠিকানা',
-                  hintText: 'ঠিকানা লিখুন',
+              FadeAnimation(
+                1.3,
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          activeCard = 0;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: activeCard == 0
+                              ? Border.all(color: Colors.grey.shade300, width: 1)
+                              : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
+                        ),
+                        child: Image.network('https://img.icons8.com/color/2x/mastercard-logo.png', height: 50),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          activeCard = 1;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: activeCard == 1
+                              ? Border.all(color: Colors.grey.shade300, width: 1)
+                              : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
+                        ),
+                        child: const Text("COD"),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          activeCard = 2;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: activeCard == 2
+                              ? Border.all(color: Colors.grey.shade300, width: 1)
+                              : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
+                        ),
+                        child: const Text("Bkash"),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 30),
-              MaterialButton(
-                onPressed: () async{
-                  if(addressController.text.isEmpty){
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অর্ডার এর ঠিকানা দিন')));
-                    return;
-                  }
-                  if(selectedPaymentMethod != null && selectedPaymentMethod == "1"){
-
-                    if(!await _networkInfo.isConnected){
-                      const snackbar = SnackBar(
-                        content: Text("No internet available!"),
-                        duration: Duration(seconds: 5),
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                      return;
-                    }
-                    await confirmOrder(widget.cartItems, "");
-                  }else if(selectedPaymentMethod != null && selectedPaymentMethod == "2"){
-
-                    if(!await _networkInfo.isConnected){
-                      const snackbar = SnackBar(
-                        content: Text("No internet available!"),
-                        duration: Duration(seconds: 5),
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                      return;
-                    }
-
-                    String cartItemName = widget.cartItems.map((product) => product.productName).join(', ');
-
-                    Sslcommerz sslcommerz = Sslcommerz(
-                        initializer: SSLCommerzInitialization(
-                            currency: SSLCurrencyType.BDT,
-                            product_category: cartItemName,
-                            multi_card_name: "visa,master,bkash",
-                            sdkType: SSLCSdkType.TESTBOX,
-                            store_id: "mobil5fe45035efe16",
-                            store_passwd: "mobil5fe45035efe16@ssl",
-                            total_amount: widget.totalPrice + 100,
-                            tran_id: DateTime.now().millisecondsSinceEpoch.toString()));
-
-                    try {
-                      SSLCTransactionInfoModel result = await sslcommerz.payNow();
-                      if (result is PlatformException) {
-                        debugPrint(result.status);
-                      } else {
-                        if (result.status!.toLowerCase() == "failed") {
-                          print('Transaction is Failed....');
-                          await Fluttertoast.showToast(
-                              msg: "Transaction is Failed....",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.red,
-                              textColor: Colors.white,
-                              fontSize: 16.0);
-                        } else {
-                          if(result.status!.toLowerCase() == "closed"){
-                            await Fluttertoast.showToast(
-                              msg:
-                              "পেমেন্ট সফল হয়নি",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.black,
-                              textColor: Colors.white,
-                              fontSize: 16.0,
-                            );
-                          }else{
-                            await confirmOrder(widget.cartItems, result.cardType.toString() );
-                            await Fluttertoast.showToast(
-                              msg:
-                              "Transaction is ${result.status} and Amount is ${result.amount}",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.black,
-                              textColor: Colors.white,
-                              fontSize: 16.0,
-                            );
-                          }
-                        }
-                      }
-                    } catch (e) {
-                      debugPrint(e.toString());
-                    }
-
-                  }else{
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please select a payment method')),
-                    );
-                  }
-                },
-                height: 45,
-                elevation: 0,
-                splashColor: Colors.lightGreen[700],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+              FadeAnimation(
+                1.4,
+                Container(
+                  height: 50,
+                  padding: const EdgeInsets.only(left: 20),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                     const Text(
+                        "অফার",
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text("কোড দিন"),
+                      ),
+                    ],
+                  ),
                 ),
-                color: Colors.lightGreen[800],
-                child: const Center(
-                  child: Text(
-                    "পরিশোধ করুন",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              FadeAnimation(
+                1.5,
+                Column(
+                  children: [
+                    Container(
+                      height: 50,
+                      padding: const EdgeInsets.only(left: 20),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "শিপিং ঠিকানা",
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              setState(() {
+                                _showAddressField = !_showAddressField;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_showAddressField)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20.0),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'শিপিং ঠিকানা লিখুন',
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 100,),
+              FadeAnimation(1.5, const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("মোট পেমেন্ট", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+                  Text("\৳526.00", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))
+                ],
+              )),
+              const SizedBox(height: 20),
+              FadeAnimation(
+                1.6,
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : pay,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            'পেমেন্ট করুন',
+                            style: TextStyle(fontSize: 18),
+                          ),
                   ),
                 ),
               ),
@@ -189,56 +380,5 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
       ),
     );
-  }
-
-  Widget buildPaymentOption(BuildContext context,String id, String title, IconData icon) {
-    final isSelected = selectedPaymentMethod == id;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedPaymentMethod = id;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(10),
-          color: isSelected ? Colors.lightGreen[50] : Colors.white,
-        ),
-        child: Row(
-          children: <Widget>[
-            Icon(icon, color: isSelected ? Colors.lightGreen[800] : Colors.grey),
-            const SizedBox(width: 15),
-            Text(title, style: TextStyle(fontSize: 18, color: isSelected ? Colors.lightGreen[800] : Colors.black)),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-
-  Future<void> confirmOrder(List<Product> cartItems, String cardType) async{
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    for(Product product in cartItems){
-      var timeStamp  = DateTime.now().millisecondsSinceEpoch;
-      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), product.sellerId, FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "Pending", selectedPaymentMethod == 1 && cardType.isEmpty ? "ক্যাশ ওন ডেলিভারি": cardType, addressController.text.toString(), 0));
-    }
-    FirestoreServices.removeAllCartItemsFromFirestore();
-
-    setState(() {
-      _isLoading = false;
-    });
-    if(!_isLoading){
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
-    }
-
-
   }
 }
