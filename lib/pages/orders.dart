@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class Product {
   final String status;
@@ -65,7 +66,7 @@ class _OrdersPageState extends State<OrdersPage> {
       imageURL:
           'https://chefcart.com.bd/wp-content/uploads/2019/05/Najirshail-Rice-1.jpg',
       owner: 'Md Eusuf Uddin',
-      price: 90,
+      price: 60,
     ),
   ];
 
@@ -79,7 +80,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen[700],
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: DropdownButton<String>(
           value: selectedStatus,
@@ -107,10 +108,29 @@ class _OrdersPageState extends State<OrdersPage> {
   }
 }
 
-class ProductItem extends StatelessWidget {
+class ProductItem extends StatefulWidget {
   final Product product;
 
   const ProductItem({super.key, required this.product});
+
+  @override
+  _ProductItemState createState() => _ProductItemState();
+}
+
+class _ProductItemState extends State<ProductItem> {
+  double _rating = 0;
+  bool _ratingSubmitted = false;
+
+  void _submitRating() {
+    setState(() {
+      _ratingSubmitted = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Rating submitted'),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,11 +145,11 @@ class ProductItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  product.name,
+                  widget.product.name,
                   style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'orderID: ${product.id}',
+                  'orderID: ${widget.product.id}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -142,14 +162,14 @@ class ProductItem extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Owner: ${product.owner}'), // Assuming product details represent status
+                      Text('Owner: ${widget.product.owner}'), // Assuming product details represent status
                       // SizedBox(height: 4.0),
                     ],
                   ),
                 ),
                 const SizedBox(width: 16.0),
                 Text(
-                  'Total Price: \$${product.price}',
+                  'Total Price: \$${widget.product.price}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -162,13 +182,13 @@ class ProductItem extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Status: ${product.status}'),
+                      Text('Status: ${widget.product.status}'),
                        // Assuming product details represent status
                       const SizedBox(height: 4.0),
                       TweenAnimationBuilder<double>(
                         tween: Tween<double>(
                           begin: 0,
-                          end: getStatusProgress(product.status),
+                          end: getStatusProgress(widget.product.status),
                         ),
                         duration: const Duration(seconds: 1),
                         builder: (context, value, child) {
@@ -181,7 +201,44 @@ class ProductItem extends StatelessWidget {
                   ),
                 ),
               ],
-            )
+            ),
+            if (widget.product.status == 'Delivered' && !_ratingSubmitted) ...[
+              const SizedBox(height: 8.0),
+              const Text('Rate this product:'),
+              RatingBar.builder(
+                initialRating: _rating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                itemBuilder: (context, _) => const Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                onRatingUpdate: (rating) {
+                  setState(() {
+                    _rating = rating;
+                  });
+                },
+              ),
+              const SizedBox(height: 8.0),
+              ElevatedButton(
+                onPressed: _submitRating,
+                child: const Text('Submit'),
+              ),
+            ] else if (_ratingSubmitted) ...[
+              const SizedBox(height: 8.0),
+              RatingBarIndicator(
+                rating: _rating,
+                itemBuilder: (context, index) => const Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                itemCount: 5,
+                itemSize: 24.0,
+              ),
+            ],
           ],
         ),
       ),
