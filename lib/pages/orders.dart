@@ -65,7 +65,7 @@ class _OrdersPageState extends State<OrdersPage> {
       imageURL:
           'https://chefcart.com.bd/wp-content/uploads/2019/05/Najirshail-Rice-1.jpg',
       owner: 'Md Eusuf Uddin',
-      price: 60,
+      price: 90,
     ),
   ];
 
@@ -79,7 +79,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.lightGreen[700],
         elevation: 0,
         title: DropdownButton<String>(
           value: selectedStatus,
