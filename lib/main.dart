@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
             title: const Text('হোম'),
           ),
           FlashyTabBarItem(
-            icon: const Icon(Icons.search, size: 23),
+            icon: const Icon(Icons.local_grocery_store_outlined, size: 23),
             title: const Text('অর্ডার গুলো'),
           ),
           FlashyTabBarItem(
