@@ -50,14 +50,14 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: Text('কার্ট', style: TextStyle(color: Colors.black)),
+        title: const Text('কার্ট', style: TextStyle(color: Colors.black)),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               height: MediaQuery.of(context).size.height * 0.5, // Reduced height
               child: cartItems.isNotEmpty
                   ? FadeAnimation(
@@ -70,7 +70,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                           return Slidable(
                             key: Key(cartItems[index].toString()),
                             startActionPane: ActionPane(
-                              motion: ScrollMotion(),
+                              motion: const ScrollMotion(),
                               children: [
                                 SlidableAction(
                                   onPressed: (context) => removeItem(index),
@@ -88,11 +88,11 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     )
                   : Container(),
             ),
-            SizedBox(height: 20), // Reduced height
+            const SizedBox(height: 20), // Reduced height
             FadeAnimation(
               1.2,
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -105,11 +105,11 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
             FadeAnimation(
               1.3,
               Padding(
-                padding: EdgeInsets.all(15.0), // Reduced padding
+                padding: const EdgeInsets.all(15.0), // Reduced padding
                 child: DottedBorder(
                   color: Colors.grey.shade400,
-                  dashPattern: [10, 10],
-                  padding: EdgeInsets.all(0),
+                  dashPattern: const [10, 10],
+                  padding: const EdgeInsets.all(0),
                   child: Container(),
                 ),
               ),
@@ -117,24 +117,24 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
             FadeAnimation(
               1.3,
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Text('মোট', style: TextStyle(fontSize: 18)), // Reduced font size
-                    Text('\৳${totalPrice + 100}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                    const Text('মোট', style: TextStyle(fontSize: 18)), // Reduced font size
+                    Text('\৳${totalPrice + 100}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             FadeAnimation(
               1.4,
               Padding(
-                padding: EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(20.0),
                 child: MaterialButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentPage()));
                   },
                   height: 45, // Reduced height
                   elevation: 0,
@@ -174,19 +174,19 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
       },
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: Offset(-1, 0),
+          begin: const Offset(-1, 0),
           end: Offset.zero,
         ).animate(animation),
         child: Container(
-          margin: EdgeInsets.only(bottom: 15), // Reduced margin
-          padding: EdgeInsets.symmetric(horizontal: 10),
+          margin: const EdgeInsets.only(bottom: 15), // Reduced margin
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.shade200,
-                offset: Offset(0, 2),
+                offset: const Offset(0, 2),
                 blurRadius: 6,
               ),
             ],
@@ -194,7 +194,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           child: Row(
             children: <Widget>[
               Container(
-                margin: EdgeInsets.only(right: 10),
+                margin: const EdgeInsets.only(right: 10),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
@@ -216,7 +216,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                         fontSize: 12, // Reduced font size
                       ),
                     ),
-                    SizedBox(height: 3), // Reduced spacing
+                    const SizedBox(height: 3), // Reduced spacing
                     Text(
                       product.name,
                       style: const TextStyle(
@@ -266,7 +266,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     ),
                   ),
                   MaterialButton(
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                     minWidth: 10,
                     splashColor: Colors.lightGreen[700],
                     onPressed: () {
