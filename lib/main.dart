@@ -60,6 +60,7 @@ class _HomePageState extends State<HomePage> {
       body: PageView(
         onPageChanged: (index) => setState(() { _selectedPage = index; }),
         controller: _pageController,
+        physics: NeverScrollableScrollPhysics(),
         children: [
           ...pages
         ],
