@@ -303,7 +303,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                             widget.documentSnapshot['brand'],
                             widget.documentSnapshot['product_price'],
                             widget.documentSnapshot['product_img'],
-                            _selectedSize.toString(),
+                            size[_selectedSize].toString(),
                             totalPrice,
                             farmerList[selectedFarmerIndex!].farmerName,
                             context);
