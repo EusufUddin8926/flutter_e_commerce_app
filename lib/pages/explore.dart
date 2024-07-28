@@ -773,7 +773,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       documentSnapshot['brand'],
                       documentSnapshot['product_price'],
                       documentSnapshot['product_img'],
-                      _selectedSize.toString(),
+                      size[_selectedSize].toString(),
                       totalPrice,
                       farmerList[selectedFarmerIndex!].farmerName,
                       context);

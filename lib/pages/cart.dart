@@ -1,13 +1,13 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-
 import '../animation/FadeAnimation.dart';
 import '../models/product.dart';
 import 'payment.dart';
-import 'product_view.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({Key? key}) : super(key: key);
@@ -18,24 +18,24 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   late List<Product> cartItems = [];
-  List<int> cartItemCount = [];
   int totalPrice = 0;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   Future<void> fetchItems() async {
-    final String response = await rootBundle.loadString('assets/products.json');
-    final data = await json.decode(response);
+    var query = await FirebaseFirestore.instance
+        .collection("user")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection("cart_item")
+        .get();
+    for (var cartItem in query.docs) {
+      Product product = Product.fromJson(cartItem.data() as Map<String, dynamic>);
+      cartItems.add(product);
+    }
 
     setState(() {
-      cartItems = data['products'].map<Product>((json) => Product.fromJson(json)).toList();
-      cartItemCount = List<int>.generate(cartItems.length, (index) => 1);
-      sumTotal();
+      totalPrice = cartItems.fold(0, (sum, item) => sum + int.parse(item.total_price));
     });
-  }
-
-  void sumTotal() {
-    totalPrice = cartItems.fold(0, (sum, item) => sum + item.price);
   }
 
   @override
@@ -52,119 +52,172 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
         backgroundColor: Colors.transparent,
         title: Text('কার্ট', style: TextStyle(color: Colors.black)),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
+      body: cartItems.isNotEmpty ? buildCartContent() : buildEmptyCart(),
+    );
+  }
+
+  Widget buildCartContent() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            height: MediaQuery.of(context).size.height * 0.5, // Reduced height
+            child: FadeAnimation(
+              1.4,
+              AnimatedList(
+                key: _listKey,
+                scrollDirection: Axis.vertical,
+                initialItemCount: cartItems.length,
+                itemBuilder: (context, index, animation) {
+                  return Slidable(
+                    key: Key(cartItems[index].toString()),
+                    startActionPane: ActionPane(
+                      motion: ScrollMotion(),
+                      children: [
+                        SlidableAction(
+                          onPressed: (BuildContext context) {
+                            removeItem(index);
+                          },
+                          backgroundColor: Colors.red.withOpacity(0.15),
+                          foregroundColor: Colors.red,
+                          icon: Icons.delete,
+                          label: 'Delete',
+                        ),
+                      ],
+                    ),
+                    child: cartItem(cartItems[index], index, animation),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 20), // Reduced height
+          FadeAnimation(
+            1.2,
             Container(
               padding: EdgeInsets.symmetric(horizontal: 20),
-              height: MediaQuery.of(context).size.height * 0.5, // Reduced height
-              child: cartItems.isNotEmpty
-                  ? FadeAnimation(
-                      1.4,
-                      AnimatedList(
-                        key: _listKey,
-                        scrollDirection: Axis.vertical,
-                        initialItemCount: cartItems.length,
-                        itemBuilder: (context, index, animation) {
-                          return Slidable(
-                            key: Key(cartItems[index].toString()),
-                            startActionPane: ActionPane(
-                              motion: ScrollMotion(),
-                              children: [
-                                SlidableAction(
-                                  onPressed: (context) => removeItem(index),
-                                  backgroundColor: Colors.red.withOpacity(0.15),
-                                  foregroundColor: Colors.red,
-                                  icon: Icons.delete,
-                                  label: 'Delete',
-                                ),
-                              ],
-                            ),
-                            child: cartItem(cartItems[index], index, animation),
-                          );
-                        },
-                      ),
-                    )
-                  : Container(),
-            ),
-            SizedBox(height: 20), // Reduced height
-            FadeAnimation(
-              1.2,
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text('শিপিং চার্জ', style: TextStyle(fontSize: 18)), // Reduced font size
-                    Text('\৳১০০', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
-                  ],
-                ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text('শিপিং চার্জ', style: TextStyle(fontSize: 18)), // Reduced font size
+                  Text('\৳100', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                ],
               ),
             ),
-            FadeAnimation(
-              1.3,
-              Padding(
-                padding: EdgeInsets.all(15.0), // Reduced padding
-                child: DottedBorder(
-                  color: Colors.grey.shade400,
-                  dashPattern: [10, 10],
-                  padding: EdgeInsets.all(0),
-                  child: Container(),
-                ),
+          ),
+          FadeAnimation(
+            1.3,
+            Padding(
+              padding: EdgeInsets.all(15.0), // Reduced padding
+              child: DottedBorder(
+                color: Colors.grey.shade400,
+                dashPattern: [10, 10],
+                padding: EdgeInsets.all(0),
+                child: Container(),
               ),
             ),
-            FadeAnimation(
-              1.3,
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text('মোট', style: TextStyle(fontSize: 18)), // Reduced font size
-                    Text('\৳${totalPrice + 100}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
-                  ],
-                ),
+          ),
+          FadeAnimation(
+            1.3,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text('মোট', style: TextStyle(fontSize: 18)), // Reduced font size
+                  Text('\৳${totalPrice + 100}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                ],
               ),
             ),
-            SizedBox(height: 10),
-            FadeAnimation(
-              1.4,
-              Padding(
-                padding: EdgeInsets.all(20.0),
-                child: MaterialButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage()));
-                  },
-                  height: 45, // Reduced height
-                  elevation: 0,
-                  splashColor: Colors.lightGreen[700],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  color: Colors.lightGreen[800],
-                  child: const Center(
-                    child: Text(
-                      "চেকআউট",
-                      style: TextStyle(color: Colors.white, fontSize: 16), // Reduced font size
-                    ),
+          ),
+          SizedBox(height: 10),
+          FadeAnimation(
+            1.4,
+            Padding(
+              padding: EdgeInsets.all(20.0),
+              child: MaterialButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage()));
+                },
+                height: 45, // Reduced height
+                elevation: 0,
+                splashColor: Colors.lightGreen[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                color: Colors.lightGreen[800],
+                child: const Center(
+                  child: Text(
+                    "চেকআউট",
+                    style: TextStyle(color: Colors.white, fontSize: 16), // Reduced font size
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  void removeItem(int index) {
+  Widget buildEmptyCart() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey),
+          SizedBox(height: 20),
+          Text(
+            'Your cart is empty',
+            style: TextStyle(fontSize: 24, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void removeItem(int index) async {
+    if (index < 0 || index >= cartItems.length) return;
+
+    final removedProduct = cartItems[index];
+
+    if (_listKey.currentState != null) {
+      _listKey.currentState!.removeItem(
+        index,
+            (context, animation) => SizeTransition(
+          sizeFactor: animation,
+          child: cartItem(cartItems[index], index, animation),
+        ),
+        duration: const Duration(milliseconds: 300),
+      );
+    }
+    // Remove item from Firestore
+    await removeItemFromFirestore(removedProduct);
+    totalPrice -= int.parse(cartItems[index].total_price);
+    cartItems.removeAt(index);
     setState(() {
-      totalPrice -= cartItems[index].price * cartItemCount[index];
-      cartItems.removeAt(index);
-      cartItemCount.removeAt(index);
-      _listKey.currentState?.removeItem(index, (context, animation) => SizeTransition(sizeFactor: animation, child: cartItem(cartItems[index], index, animation)));
+
     });
+  }
+
+  Future<void> removeItemFromFirestore(Product product) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("user")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("cart_item")
+          .doc(product.uid)
+          .delete();
+      if (kDebugMode) {
+        print('Item removed from Firestore successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error removing item from Firestore: $e');
+      }
+    }
   }
 
   Widget cartItem(Product product, int index, Animation<double> animation) {
@@ -198,7 +251,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
-                    product.imageURL,
+                    product.product_img,
                     fit: BoxFit.cover,
                     height: 80, // Reduced height
                     width: 80, // Reduced width
@@ -210,7 +263,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      product.brand,
+                      product.productBrand,
                       style: TextStyle(
                         color: Colors.lightGreen.shade400,
                         fontSize: 12, // Reduced font size
@@ -218,7 +271,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     ),
                     SizedBox(height: 3), // Reduced spacing
                     Text(
-                      product.name,
+                      product.productName,
                       style: const TextStyle(
                         fontSize: 16, // Reduced font size
                         fontWeight: FontWeight.w600,
@@ -226,7 +279,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 10), // Reduced spacing
                     Text(
-                      '\৳${product.price}',
+                      '\৳${product.product_price}',
                       style: TextStyle(
                         fontSize: 18, // Reduced font size
                         color: Colors.grey.shade800,
@@ -243,9 +296,12 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     padding: const EdgeInsets.all(0),
                     onPressed: () {
                       setState(() {
-                        if (cartItemCount[index] > 1) {
-                          cartItemCount[index]--;
-                          totalPrice -= product.price;
+                        int totalAmount = int.parse(cartItems[index].product_amount);
+                        if (totalAmount > 1) {
+                          totalAmount--;
+                          cartItems[index].product_amount = totalAmount.toString();
+                          cartItems[index].total_price = (totalAmount * cartItems[index].product_price).toString();
+                          totalPrice -= cartItems[index].product_price;
                         }
                       });
                     },
@@ -258,7 +314,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                   ),
                   Center(
                     child: Text(
-                      cartItemCount[index].toString(),
+                      cartItems[index].product_amount,
                       style: TextStyle(
                         fontSize: 18, // Reduced font size
                         color: Colors.grey.shade800,
@@ -271,8 +327,11 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     splashColor: Colors.lightGreen[700],
                     onPressed: () {
                       setState(() {
-                        cartItemCount[index]++;
-                        totalPrice += product.price;
+                        int totalAmount = int.parse(cartItems[index].product_amount);
+                        totalAmount++;
+                        cartItems[index].product_amount = totalAmount.toString();
+                        cartItems[index].total_price = (totalAmount * cartItems[index].product_price).toString();
+                        totalPrice += cartItems[index].product_price;
                       });
                     },
                     shape: const CircleBorder(),
