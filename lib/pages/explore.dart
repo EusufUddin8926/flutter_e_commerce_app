@@ -48,7 +48,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   // int _selectedColor = 0;
   int _selectedSize = 1;
 
-  var selectedRange = const RangeValues(150.00, 1500.00);
+  var selectedRange = RangeValues(150.00, 1500.00);
   late String totalPrice, unitPrice, amount, seller_name;
 
   
@@ -95,10 +95,10 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
               final double maxExtent = constraints.maxHeight;
               final double currentExtent = constraints.biggest.height;
               final double deltaExtent = maxExtent - minExtent;
-              final double t = (1.0 - (currentExtent - minExtent) / deltaExtent).clamp(0.0, 0.5);
+              final double t = (1.0 - (currentExtent - minExtent) / deltaExtent).clamp(0.0, 1.0);
               
-              final double logoHeight = lerpDouble(150, 10, t)!;
-              final double fontSize = lerpDouble(20, 10, t)!;
+              final double logoHeight = lerpDouble(120, 40, t)!;
+              final double fontSize = lerpDouble(20, 18, t)!;
 
               return FlexibleSpaceBar(
                 centerTitle: true,
@@ -106,7 +106,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: NeverScrollableScrollPhysics(),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
                             minHeight: constraints.maxHeight,
@@ -116,9 +116,9 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 AnimatedContainer(
-                                  duration: const Duration(milliseconds: 1),
+                                  duration: Duration(milliseconds: 200),
                                   height: logoHeight,
-                                  margin: const EdgeInsets.only(bottom: 2),
+                                  margin: EdgeInsets.only(bottom: 8),
                                   child: Image.asset(
                                     'assets/images/logo.png',
                                     fit: BoxFit.contain,
@@ -175,21 +175,21 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       readOnly: true,
                       cursorColor: Colors.grey,
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                         filled: true,
                         fillColor: Colors.white,
-                        prefixIcon: const Icon(Icons.search, color: Colors.black),
+                        prefixIcon: Icon(Icons.search, color: Colors.black),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none
                         ),
                         hintText: "আপনার পছন্দের পণ্যটি বাছাই করুন",
-                        hintStyle: const TextStyle(fontSize: 14, color: Colors.black),
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.black),
                       ),
                     ),
                   )),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 FadeAnimation(1.5, Container(
                   height: 50,
                   width: 50,
@@ -201,7 +201,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     onPressed: () {
                       showFilterModal();
                     },
-                    icon: const Icon(Icons.filter_list, color: Colors.black, size: 30,),
+                    icon: Icon(Icons.filter_list, color: Colors.black, size: 30,),
                   ),
                 ))
               ],
@@ -211,7 +211,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
-              padding: const EdgeInsets.only(top: 20, left: 20),
+              padding: EdgeInsets.only(top: 20, left: 20),
               color: Colors.white,
               height: 330,
               child: Column(
@@ -226,7 +226,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       ),
                     ],
                   )),
-                  const SizedBox(height: 10,),
+                  SizedBox(height: 10,),
                   Expanded(
                     child: StreamBuilder(
                       stream: mostPopularRef.snapshots(),
@@ -249,7 +249,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
             ),
             Container(
                 color: Colors.white,
-              padding: const EdgeInsets.only(top: 20, left: 20),
+              padding: EdgeInsets.only(top: 20, left: 20),
               height: 180,
               child: Column(
                 children: [
@@ -263,7 +263,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       ),
                     ],
                   )),
-                  const SizedBox(height: 10,),
+                  SizedBox(height: 10,),
                   Expanded(
                     child: StreamBuilder(
                       stream: forYouRef.snapshots(),
@@ -278,7 +278,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               }
                           );
                         }
-                        return const Center(child: CircularProgressIndicator(),);
+                        return Center(child: CircularProgressIndicator(),);
                       },
                     )
                   )
@@ -287,7 +287,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
             ),
             Container(
                 color: Colors.white,
-              padding: const EdgeInsets.only(top: 20, left: 20),
+              padding: EdgeInsets.only(top: 20, left: 20),
               height: 330,
               child: Column(
                 children: [
@@ -301,7 +301,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10,),
+                  SizedBox(height: 10,),
                   Expanded(
                     child: StreamBuilder(
                       stream: allProductRef.snapshots(),
@@ -315,7 +315,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                 return productCart(documentSnapshot);
                               });
                         };
-                        return const Center(child: CircularProgressIndicator(),);
+                        return Center(child: CircularProgressIndicator(),);
                       },
                     )
                   )
@@ -348,19 +348,19 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
              Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: documentSnapshot,)));
           },
           child: Container(
-            margin: const EdgeInsets.only(right: 20, bottom: 16),
+            margin: EdgeInsets.only(right: 20, bottom: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  offset: const Offset(5, 10),
+                  offset: Offset(5, 10),
                   blurRadius: 15,
                   color: Colors.grey.shade200,
                 )
               ],
             ),
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -405,7 +405,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 Text(
                   documentSnapshot['product_name'],
                   style: const TextStyle(
@@ -416,7 +416,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   overflow: TextOverflow.ellipsis,
                   maxLines: 2, // Adjust this based on your needs
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -464,19 +464,19 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
             Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: forYoudocumentSnapshot,)));
           },
           child: Container(
-            margin: const EdgeInsets.only(right: 20, bottom: 25),
+            margin: EdgeInsets.only(right: 20, bottom: 25),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  offset: const Offset(5, 10),
+                  offset: Offset(5, 10),
                   blurRadius: 15,
                   color: Colors.grey.shade200,
                 ),
               ],
             ),
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -491,7 +491,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -507,7 +507,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 5),
+                      SizedBox(height: 5),
                       Flexible(
                         child: Text(
                           forYoudocumentSnapshot['brand'],
@@ -518,7 +518,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                       Flexible(
                         child: Text(
                           "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',
@@ -553,7 +553,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         return StatefulBuilder(
           builder: (context, setState) {
             return Container(
-              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+              padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
               height: MediaQuery.of(context).size.height * 0.8,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -561,7 +561,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Filter', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                      Text('Filter', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                       MaterialButton(
                         onPressed: () {
                           Navigator.pop(context);
@@ -570,17 +570,17 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                         height: 40,
                         color: Colors.grey.shade300,
                         elevation: 0,
-                        padding: const EdgeInsets.all(0),
+                        padding: EdgeInsets.all(0),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(50)
                         ),
-                        child: const Icon(Icons.close, color: Colors.black,),
+                        child: Icon(Icons.close, color: Colors.black,),
                       )
                     ],
                   ),
-                  const SizedBox(height: 20,),
-                  const Text('পরিমান', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                  const SizedBox(height: 10,),
+                  SizedBox(height: 20,),
+                  Text('পরিমান', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                  SizedBox(height: 10,),
                   Container(
                     height: 60,
                     child: ListView.builder(
@@ -594,8 +594,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                             });
                           },
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 500),
-                            margin: const EdgeInsets.only(right: 10),
+                            duration: Duration(milliseconds: 500),
+                            margin: EdgeInsets.only(right: 10),
                             decoration: BoxDecoration(
                               color: _selectedSize == index ? Colors.lightGreen[800] : Colors.grey.shade200,
                               shape: BoxShape.circle
@@ -703,8 +703,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               });
                             },
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 500),
-                              margin: const EdgeInsets.only(right: 10),
+                              duration: Duration(milliseconds: 500),
+                              margin: EdgeInsets.only(right: 10),
                               decoration: BoxDecoration(
                                 color: _selectedSize == index
                                     ? Colors.lightGreen[800]
@@ -773,7 +773,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       documentSnapshot['brand'],
                       documentSnapshot['product_price'],
                       documentSnapshot['product_img'],
-                      _selectedSize.toString(),
+                      size[_selectedSize].toString(),
                       totalPrice,
                       farmerList[selectedFarmerIndex!].farmerName,
                       context);
