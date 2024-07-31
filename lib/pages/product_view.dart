@@ -260,7 +260,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                               scrollDirection: Axis.vertical,
                               shrinkWrap: true,
                               // Allows the ListView to wrap its content
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               // Disables scrolling
                               itemBuilder: (context, index) {
                                 return SingleFarmerItem(

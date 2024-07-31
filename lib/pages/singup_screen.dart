@@ -55,7 +55,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 15),
                     Text(
-                      "Wellcome back vou've\nbeen missed!",
+                      "Welcome to Krishi!",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18, color: textColor2, height: 1.2),
                     ),

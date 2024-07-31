@@ -29,7 +29,7 @@ class _PaymentPageState extends State<PaymentPage> {
         setState(() {
           _isLoading = false;
           timer.cancel();
-          Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentSuccess()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
         });
       },
     );
@@ -41,12 +41,12 @@ class _PaymentPageState extends State<PaymentPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('পেমেন্ট', style: TextStyle(color: Colors.black)),
-        leading: BackButton(color: Colors.black),
+        title: const Text('পেমেন্ট', style: TextStyle(color: Colors.black)),
+        leading: const BackButton(color: Colors.black),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -54,12 +54,12 @@ class _PaymentPageState extends State<PaymentPage> {
                   ? FadeAnimation(
                       1.2,
                       AnimatedOpacity(
-                        duration: Duration(milliseconds: 500),
+                        duration: const Duration(milliseconds: 500),
                         opacity: activeCard == 0 ? 1 : 0,
                         child: Container(
                           width: double.infinity,
                           height: 200,
-                          padding: EdgeInsets.all(20.0),
+                          padding: const EdgeInsets.all(20.0),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
                             gradient: LinearGradient(
@@ -76,22 +76,22 @@ class _PaymentPageState extends State<PaymentPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                              const Text(
                                 "ক্রেডিট/ডেবিট কার্ড",
                                 style: TextStyle(color: Colors.white),
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     "**** **** **** 7890",
                                     style: TextStyle(color: Colors.white, fontSize: 30),
                                   ),
-                                  SizedBox(height: 5),
+                                  const SizedBox(height: 5),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
+                                      const Text(
                                         "Credit/Debit Card",
                                         style: TextStyle(color: Colors.white),
                                       ),
@@ -110,12 +110,12 @@ class _PaymentPageState extends State<PaymentPage> {
                       ? FadeAnimation(
                           1.2,
                           AnimatedOpacity(
-                            duration: Duration(milliseconds: 500),
+                            duration: const Duration(milliseconds: 500),
                             opacity: activeCard == 1 ? 1 : 0,
                             child: Container(
                               width: double.infinity,
                               height: 200,
-                              padding: EdgeInsets.all(30.0),
+                              padding: const EdgeInsets.all(30.0),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(30),
                                 gradient: LinearGradient(
@@ -136,12 +136,12 @@ class _PaymentPageState extends State<PaymentPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Image.asset('assets/images/cod.png', height: 50),
-                                      SizedBox(height: 30),
+                                      const SizedBox(height: 30),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
-                                          Text(
+                                          const Text(
                                             "Cash on delivery",
                                             style: TextStyle(color: Colors.black, fontSize: 18),
                                           ),
@@ -158,12 +158,12 @@ class _PaymentPageState extends State<PaymentPage> {
                       : FadeAnimation(
                           1.2,
                           AnimatedOpacity(
-                            duration: Duration(milliseconds: 500),
+                            duration: const Duration(milliseconds: 500),
                             opacity: activeCard == 2 ? 1 : 0,
                             child: Container(
                               width: double.infinity,
                               height: 200,
-                              padding: EdgeInsets.all(30.0),
+                              padding: const EdgeInsets.all(30.0),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(30),
                                 gradient: LinearGradient(
@@ -184,12 +184,12 @@ class _PaymentPageState extends State<PaymentPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Image.asset('assets/images/bkash.png', height: 50),
-                                      SizedBox(height: 30),
+                                      const SizedBox(height: 30),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
-                                          Text(
+                                          const Text(
                                             "Bkash",
                                             style: TextStyle(color: Colors.black, fontSize: 18),
                                           ),
@@ -203,15 +203,15 @@ class _PaymentPageState extends State<PaymentPage> {
                             ),
                           ),
                         ),
-              SizedBox(height: 50),
+              const SizedBox(height: 50),
               FadeAnimation(
                 1.2,
-                Text(
+                const Text(
                   "পেমেন্ট পদ্ধতি",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               FadeAnimation(
                 1.3,
                 Row(
@@ -223,9 +223,9 @@ class _PaymentPageState extends State<PaymentPage> {
                         });
                       },
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: EdgeInsets.only(right: 10),
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
                           border: activeCard == 0
@@ -242,16 +242,16 @@ class _PaymentPageState extends State<PaymentPage> {
                         });
                       },
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: EdgeInsets.only(right: 10),
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
                           border: activeCard == 1
                               ? Border.all(color: Colors.grey.shade300, width: 1)
                               : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
                         ),
-                        child: Text("COD"),
+                        child: const Text("COD"),
                       ),
                     ),
                     GestureDetector(
@@ -261,27 +261,27 @@ class _PaymentPageState extends State<PaymentPage> {
                         });
                       },
                       child: AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: EdgeInsets.only(right: 10),
-                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
                           border: activeCard == 2
                               ? Border.all(color: Colors.grey.shade300, width: 1)
                               : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
                         ),
-                        child: Text("Bkash"),
+                        child: const Text("Bkash"),
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               FadeAnimation(
                 1.4,
                 Container(
                   height: 50,
-                  padding: EdgeInsets.only(left: 20),
+                  padding: const EdgeInsets.only(left: 20),
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
@@ -290,26 +290,26 @@ class _PaymentPageState extends State<PaymentPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                     const Text(
                         "অফার",
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                       ),
                       TextButton(
                         onPressed: () {},
-                        child: Text("কোড দিন"),
+                        child: const Text("কোড দিন"),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               FadeAnimation(
                 1.5,
                 Column(
                   children: [
                     Container(
                       height: 50,
-                      padding: EdgeInsets.only(left: 20),
+                      padding: const EdgeInsets.only(left: 20),
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
@@ -318,12 +318,12 @@ class _PaymentPageState extends State<PaymentPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "শিপিং ঠিকানা",
                             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                           ),
                           IconButton(
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             onPressed: () {
                               setState(() {
                                 _showAddressField = !_showAddressField;
@@ -334,8 +334,8 @@ class _PaymentPageState extends State<PaymentPage> {
                       ),
                     ),
                     if (_showAddressField)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20.0),
                         child: TextField(
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
@@ -346,32 +346,32 @@ class _PaymentPageState extends State<PaymentPage> {
                   ],
                 ),
               ),
-              SizedBox(height: 100,),
-              FadeAnimation(1.5, Row(
+              const SizedBox(height: 100,),
+              FadeAnimation(1.5, const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("মোট পেমেন্ট", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
                   Text("\৳526.00", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))
                 ],
               )),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               FadeAnimation(
                 1.6,
                 Center(
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : pay,
-                    child: _isLoading
-                        ? CircularProgressIndicator()
-                        : Text(
-                            'পেমেন্ট করুন',
-                            style: TextStyle(fontSize: 18),
-                          ),
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            'পেমেন্ট করুন',
+                            style: TextStyle(fontSize: 18),
+                          ),
                   ),
                 ),
               ),

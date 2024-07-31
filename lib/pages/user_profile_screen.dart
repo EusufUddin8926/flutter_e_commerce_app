@@ -27,7 +27,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
-
+    
     fullNameController.addListener(_updateSaveButtonState);
     emailController.addListener(_updateSaveButtonState);
     phoneNumberController.addListener(_updateSaveButtonState);
@@ -63,7 +63,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               email: data['email'] ?? '',
               phoneNumber: data['phone_number'] ?? '',
               address: data['address'] ?? '',
-              profilePhotoUrl: data['profilePhotoUrl'] ?? '',
+              profilePhotoUrl: data['profilePhotoUrl'] ?? '', 
               type: data['type'] ?? '',
             );
             fullNameController.text = userProfile!.fullName;
@@ -165,15 +165,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               icon: Icon(_isEditing ? Icons.save : Icons.edit),
               onPressed: _isEditing
                   ? () {
-                if (_canSaveProfile()) {
-                  _updateProfile();
-                }
-              }
+                      if (_canSaveProfile()) {
+                        _updateProfile();
+                      }
+                    }
                   : () {
-                setState(() {
-                  _isEditing = !_isEditing;
-                });
-              },
+                      setState(() {
+                        _isEditing = !_isEditing;
+                      });
+                    },
             ),
             IconButton(
               icon: const Icon(Icons.logout),
@@ -272,3 +272,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 }
+
+
+
