@@ -33,15 +33,23 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
       cartItems.add(product);
     }
 
-    setState(() {
-      totalPrice = cartItems.fold(0, (sum, item) => sum + int.parse(item.total_price));
-    });
+    if (mounted) {
+      setState(() {
+        totalPrice = cartItems.fold(0, (sum, item) => sum + int.parse(item.total_price));
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     fetchItems();
+  }
+
+  @override
+  void dispose() {
+    // Any clean-up operations if necessary
+    super.dispose();
   }
 
   @override
@@ -113,7 +121,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               padding: const EdgeInsets.all(15.0), // Reduced padding
               child: DottedBorder(
                 color: Colors.grey.shade400,
-                dashPattern: [10, 10],
+                dashPattern: const [10, 10],
                 padding: const EdgeInsets.all(0),
                 child: Container(),
               ),
@@ -197,9 +205,11 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
     await removeItemFromFirestore(removedProduct);
     totalPrice -= int.parse(cartItems[index].total_price);
     cartItems.removeAt(index);
-    setState(() {
+    if (mounted) {
+      setState(() {
 
-    });
+      });
+    }
   }
 
   Future<void> removeItemFromFirestore(Product product) async {
@@ -285,61 +295,20 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                         color: Colors.grey.shade800,
                       ),
                     ),
+                    const SizedBox(height: 10), // Reduced spacing
+                    Text(
+                      product.sellerName,
+                      style: TextStyle(
+                        fontSize: 15, // Reduced font size
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  MaterialButton(
-                    minWidth: 10,
-                    padding: const EdgeInsets.all(0),
-                    onPressed: () {
-                      setState(() {
-                        int totalAmount = int.parse(cartItems[index].product_amount);
-                        if (totalAmount > 1) {
-                          totalAmount--;
-                          cartItems[index].product_amount = totalAmount.toString();
-                          cartItems[index].total_price = (totalAmount * cartItems[index].product_price).toString();
-                          totalPrice -= cartItems[index].product_price;
-                        }
-                      });
-                    },
-                    shape: const CircleBorder(),
-                    child: Icon(
-                      Icons.remove_circle_outline,
-                      color: Colors.grey.shade400,
-                      size: 25, // Reduced size
-                    ),
-                  ),
-                  Center(
-                    child: Text(
-                      cartItems[index].product_amount,
-                      style: TextStyle(
-                        fontSize: 18, // Reduced font size
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                  ),
-                  MaterialButton(
-                    padding: const EdgeInsets.all(0),
-                    minWidth: 10,
-                    splashColor: Colors.lightGreen[700],
-                    onPressed: () {
-                      setState(() {
-                        int totalAmount = int.parse(cartItems[index].product_amount);
-                        totalAmount++;
-                        cartItems[index].product_amount = totalAmount.toString();
-                        cartItems[index].total_price = (totalAmount * cartItems[index].product_price).toString();
-                        totalPrice += cartItems[index].product_price;
-                      });
-                    },
-                    shape: const CircleBorder(),
-                    child: const Icon(
-                      Icons.add_circle,
-                      size: 25, // Reduced size
-                    ),
-                  ),
+                children: <Widget>[
+                  buildQuantityButtons(product, index),
                 ],
               ),
             ],
@@ -347,5 +316,69 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  Widget buildQuantityButtons(Product product, int index) {
+    return Row(
+      children: <Widget>[
+        buildQuantityButton(Icons.remove, product, index, false),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10), // Reduced margin
+          child: Text(
+            product.product_amount,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600), // Reduced font size
+          ),
+        ),
+        buildQuantityButton(Icons.add, product, index, true),
+      ],
+    );
+  }
+
+  Widget buildQuantityButton(IconData icon, Product product, int index, bool increment) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          int currentAmount = int.parse(product.product_amount);
+          if (increment) {
+            currentAmount++;
+            totalPrice += product.product_price;
+          } else {
+            if (currentAmount > 1) {
+              currentAmount--;
+              totalPrice -= product.product_price;
+            }
+          }
+          product.product_amount = currentAmount.toString();
+          product.total_price = (currentAmount * product.product_price).toString();
+          updateItemInFirestore(product);
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.grey.shade200,
+        ),
+        child: Icon(icon, size: 16), // Reduced icon size
+      ),
+    );
+  }
+
+  Future<void> updateItemInFirestore(Product product) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("user")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("cart_item")
+          .doc(product.uid)
+          .update(product.toJson());
+      if (kDebugMode) {
+        print('Item updated in Firestore successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating item in Firestore: $e');
+      }
+    }
   }
 }
