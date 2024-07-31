@@ -24,15 +24,12 @@ class FirestoreServices {
       String totalPrice,
       String sellerName,
       BuildContext context) async {
-
-    dynamic timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
     await FirebaseFirestore.instance
         .collection('user')
         .doc(uid)
         .collection('cart_item')
-        .doc(timeStamp)
-        .set({
-      'uid': timeStamp,
+        .add({
+      'uid': uid,
       'product_name': productName,
       'brand': brand,
       'price': price,
