@@ -1,25 +1,26 @@
-import 'dart:convert';
 import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_e_commerce_app/pages/product_view.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+
 import '../animation/FadeAnimation.dart';
 import '../components/single_farmer_item.dart';
+import '../helpers/network_info.dart';
 import '../models/farmer_model.dart';
-import '../models/product.dart';
 import '../service/firestore_service.dart';
 
-class ExplorePage extends StatefulWidget {  
-  const ExplorePage({ Key? key }) : super(key: key);
+class ExplorePage extends StatefulWidget {
+  const ExplorePage({Key? key}) : super(key: key);
 
   @override
   _ExplorePageState createState() => _ExplorePageState();
 }
 
-class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin {
+class _ExplorePageState extends State<ExplorePage>
+    with TickerProviderStateMixin {
   late ScrollController _scrollController;
   bool _isScrolled = false;
   List<dynamic> productList = [];
@@ -46,20 +47,22 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
   // int _selectedColor = 0;
   int _selectedSize = 1;
-
+  late NetworkInfo _networkInfo;
   var selectedRange = const RangeValues(10.00, 1500.00);
   late String totalPrice, unitPrice, amount, seller_name;
 
-  
-  CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
-  CollectionReference forYouRef = FirebaseFirestore.instance.collection("for yourself");
-  CollectionReference allProductRef = FirebaseFirestore.instance.collection("All Product");
+  CollectionReference mostPopularRef =
+      FirebaseFirestore.instance.collection("Most Popular");
+  CollectionReference forYouRef =
+      FirebaseFirestore.instance.collection("for yourself");
+  CollectionReference allProductRef =
+      FirebaseFirestore.instance.collection("All Product");
 
   @override
-  void initState() { 
+  void initState() {
     _scrollController = ScrollController();
     _scrollController.addListener(_listenToScrollChange);
-    //products();
+    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
 
     super.initState();
   }
@@ -78,253 +81,321 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 300.0,
-          elevation: 0,
-          pinned: true,
-          floating: true,
-          stretch: true,
-          backgroundColor: Colors.grey.shade50,
-          flexibleSpace: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final double minExtent = MediaQuery.of(context).padding.top + kToolbarHeight;
-              final double maxExtent = constraints.maxHeight;
-              final double currentExtent = constraints.biggest.height;
-              final double deltaExtent = maxExtent - minExtent;
-              final double t = (1.0 - (currentExtent - minExtent) / deltaExtent).clamp(0.0, 1.0);
-              
-              final double logoHeight = lerpDouble(120, 40, t)!;
-              final double fontSize = lerpDouble(20, 18, t)!;
+    return CustomScrollView(controller: _scrollController, slivers: [
+      SliverAppBar(
+        expandedHeight: 300.0,
+        elevation: 0,
+        pinned: true,
+        floating: true,
+        stretch: true,
+        backgroundColor: Colors.grey.shade50,
+        flexibleSpace: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final double minExtent =
+                MediaQuery.of(context).padding.top + kToolbarHeight;
+            final double maxExtent = constraints.maxHeight;
+            final double currentExtent = constraints.biggest.height;
+            final double deltaExtent = maxExtent - minExtent;
+            final double t = (1.0 - (currentExtent - minExtent) / deltaExtent)
+                .clamp(0.0, 1.0);
 
-              return FlexibleSpaceBar(
-                centerTitle: true,
-                title: SafeArea(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                          ),
-                          child: IntrinsicHeight(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  height: logoHeight,
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  child: Image.asset(
-                                    'assets/images/logo.png',
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                                Text(
-                                  "কৃষিতে আপনাকে স্বাগতম",
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: fontSize,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
+            final double logoHeight = lerpDouble(120, 40, t)!;
+            final double fontSize = lerpDouble(20, 18, t)!;
+
+            return FlexibleSpaceBar(
+              centerTitle: true,
+              title: SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
                         ),
-                      );
-                    },
-                  ),
-                ),
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset("assets/images/background.png", fit: BoxFit.cover),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.3),
-                          ],
+                        child: IntrinsicHeight(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                height: logoHeight,
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              Text(
+                                "কৃষিতে আপনাকে স্বাগতম",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: fontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-          bottom: AppBar(
-            toolbarHeight: 70,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            title: Row(
-              children: [
-                Expanded(
-                  child: FadeAnimation(1.4, Container(
+              ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset("assets/images/background.png",
+                      fit: BoxFit.cover),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.3),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        bottom: AppBar(
+          toolbarHeight: 70,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          title: Row(
+            children: [
+              Expanded(
+                child: FadeAnimation(
+                    1.4,
+                    Container(
+                      height: 50,
+                      child: TextField(
+                        readOnly: true,
+                        cursorColor: Colors.grey,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 20),
+                          filled: true,
+                          fillColor: Colors.white,
+                          prefixIcon:
+                              const Icon(Icons.search, color: Colors.black),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none),
+                          hintText: "আপনার পছন্দের পণ্যটি বাছাই করুন",
+                          hintStyle: const TextStyle(
+                              fontSize: 14, color: Colors.black),
+                        ),
+                      ),
+                    )),
+              ),
+              const SizedBox(width: 10),
+              FadeAnimation(
+                  1.5,
+                  Container(
                     height: 50,
-                    child: TextField(
-                      readOnly: true,
-                      cursorColor: Colors.grey,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: const Icon(Icons.search, color: Colors.black),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none
-                        ),
-                        hintText: "আপনার পছন্দের পণ্যটি বাছাই করুন",
-                        hintStyle: const TextStyle(fontSize: 14, color: Colors.black),
+                    width: 50,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: IconButton(
+                      onPressed: () {
+                        showFilterModal();
+                      },
+                      icon: const Icon(
+                        Icons.filter_list,
+                        color: Colors.black,
+                        size: 30,
                       ),
                     ),
-                  )),
-                ),
-                const SizedBox(width: 10),
-                FadeAnimation(1.5, Container(
-                  height: 50,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      showFilterModal();
-                    },
-                    icon: const Icon(Icons.filter_list, color: Colors.black, size: 30,),
-                  ),
-                ))
-              ],
-            ),
+                  ))
+            ],
           ),
         ),
-        SliverList(
-          delegate: SliverChildListDelegate([
-            Container(
-              padding: const EdgeInsets.only(top: 20, left: 20),
-              color: Colors.white,
-              height: 330,
-              child: Column(
-                children: [
-                  FadeAnimation(1.4, const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('বহুল প্রচলিত পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                      Padding(
-                        padding: EdgeInsets.only(right: 20.0),
-                        child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
-                      ),
-                    ],
-                  )),
-                  const SizedBox(height: 10,),
-                  Expanded(
-                    child: StreamBuilder(
-                      stream: mostPopularRef.snapshots(),
-                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
-                        if(stramSnapShot.hasData){
-                          return ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: stramSnapShot.data!.docs.length,
-                        itemBuilder: (context, index) {
-                        final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
-                        return productCart(documentSnapshot);
-                        });
-                        };
-                        return const Center(child: CircularProgressIndicator(),);
-                      },
-                    )
-                  )
-                ]
-              )
-            ),
-            Container(
-                color: Colors.white,
-              padding: const EdgeInsets.only(top: 20, left: 20),
-              height: 180,
-              child: Column(
-                children: [
-                  FadeAnimation(1.4, const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('আপনার জন্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                      Padding(
-                        padding: EdgeInsets.only(right: 20.0),
-                        child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
-                      ),
-                    ],
-                  )),
-                  const SizedBox(height: 10,),
-                  Expanded(
-                    child: StreamBuilder(
-                      stream: forYouRef.snapshots(),
-                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
-                        if(stramSnapShot.hasData){
-                          return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: stramSnapShot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                final DocumentSnapshot forYoudocumentSnapshot = stramSnapShot.data!.docs[index];
-                                return forYou(forYoudocumentSnapshot);
-                              }
-                          );
-                        }
-                        return const Center(child: CircularProgressIndicator(),);
-                      },
-                    )
-                  )
-                ]
-              )
-            ),
-            Container(
-                color: Colors.white,
-              padding: const EdgeInsets.only(top: 20, left: 20),
-              height: 330,
-              child: Column(
-                children: [
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('নতুন পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                      Padding(
-                        padding: EdgeInsets.only(right: 20.0),
-                        child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10,),
-                  Expanded(
-                    child: StreamBuilder(
-                      stream: allProductRef.snapshots(),
-                      builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
-                        if(stramSnapShot.hasData){
-                          return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: stramSnapShot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
-                                return productCart(documentSnapshot);
-                              });
-                        };
-                        return const Center(child: CircularProgressIndicator(),);
-                      },
-                    )
-                  )
-                ]
-              )
-            ),
-          ]),
-        )
-      ]
-    );
+      ),
+      FutureBuilder<bool>(
+          future: _networkInfo.isConnected, // Future<bool> here
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SliverFillRemaining(
+                child:
+                    Center(child: CircularProgressIndicator()), // Loading state
+              );
+            } else if (snapshot.hasError ||
+                !snapshot.hasData ||
+                !snapshot.data!) {
+              return const SliverFillRemaining(
+                child: Center(child: Text("No Internet Available!")),
+              );
+            } else {
+              return SliverList(
+                delegate: SliverChildListDelegate([
+                  Container(
+                      padding: const EdgeInsets.only(top: 20, left: 20),
+                      color: Colors.white,
+                      height: 330,
+                      child: Column(children: [
+                        FadeAnimation(
+                            1.4,
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'বহুল প্রচলিত পণ্য',
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 20.0),
+                                  child: Text(
+                                    'সব দেখুন  ',
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            )),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Expanded(
+                            child: StreamBuilder(
+                          stream: mostPopularRef.snapshots(),
+                          builder: (context,
+                              AsyncSnapshot<QuerySnapshot> stramSnapShot) {
+                            if (stramSnapShot.hasData) {
+                              return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: stramSnapShot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    final DocumentSnapshot documentSnapshot =
+                                        stramSnapShot.data!.docs[index];
+                                    return productCart(documentSnapshot);
+                                  });
+                            }
+                            ;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        ))
+                      ])),
+                  Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.only(top: 20, left: 20),
+                      height: 180,
+                      child: Column(children: [
+                        FadeAnimation(
+                            1.4,
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'আপনার জন্য',
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(right: 20.0),
+                                  child: Text(
+                                    'সব দেখুন  ',
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            )),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Expanded(
+                            child: StreamBuilder(
+                          stream: forYouRef.snapshots(),
+                          builder: (context,
+                              AsyncSnapshot<QuerySnapshot> stramSnapShot) {
+                            if (stramSnapShot.hasData) {
+                              return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: stramSnapShot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    final DocumentSnapshot
+                                        forYoudocumentSnapshot =
+                                        stramSnapShot.data!.docs[index];
+                                    return forYou(forYoudocumentSnapshot);
+                                  });
+                            }
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        ))
+                      ])),
+                  Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.only(top: 20, left: 20),
+                      height: 330,
+                      child: Column(children: [
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'নতুন পণ্য',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(right: 20.0),
+                              child: Text(
+                                'সব দেখুন  ',
+                                style: TextStyle(
+                                    color: Colors.black, fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Expanded(
+                            child: StreamBuilder(
+                          stream: allProductRef.snapshots(),
+                          builder: (context,
+                              AsyncSnapshot<QuerySnapshot> stramSnapShot) {
+                            if (stramSnapShot.hasData) {
+                              return ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: stramSnapShot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    final DocumentSnapshot documentSnapshot =
+                                        stramSnapShot.data!.docs[index];
+                                    return productCart(documentSnapshot);
+                                  });
+                            }
+                            ;
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        ))
+                      ])),
+                ]),
+              );
+            }
+          })
+    ]);
   }
 
   /*Future<void> products() async {
@@ -344,7 +415,12 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         1.5,
         GestureDetector(
           onTap: () {
-             Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: documentSnapshot,)));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ProductViewPage(
+                          documentSnapshot: documentSnapshot,
+                        )));
           },
           child: Container(
             margin: const EdgeInsets.only(right: 20, bottom: 16),
@@ -432,7 +508,9 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       ),
                     ),
                     Text(
-                      "\৳ " + documentSnapshot['product_price'].toString() + '.00',
+                      "\৳ " +
+                          documentSnapshot['product_price'].toString() +
+                          '.00',
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 18,
@@ -452,15 +530,19 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     );
   }
 
-
   forYou(DocumentSnapshot<Object?> forYoudocumentSnapshot) {
     return AspectRatio(
       aspectRatio: 3 / 1,
       child: FadeAnimation(
         1.5,
         GestureDetector(
-          onTap: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ProductViewPage(documentSnapshot: forYoudocumentSnapshot,)));
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ProductViewPage(
+                          documentSnapshot: forYoudocumentSnapshot,
+                        )));
           },
           child: Container(
             margin: const EdgeInsets.only(right: 20, bottom: 25),
@@ -520,7 +602,10 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       const SizedBox(height: 10),
                       Flexible(
                         child: Text(
-                          "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',
+                          "\৳ " +
+                              forYoudocumentSnapshot['product_price']
+                                  .toString() +
+                              '.00',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: MediaQuery.of(context).size.width * 0.045,
@@ -539,127 +624,170 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     );
   }
 
-
-
   showFilterModal() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
-      ),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20))),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Container(
-              padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Filter', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                      MaterialButton(
-                        onPressed: () {
-                          Navigator.pop(context);
+        return StatefulBuilder(builder: (context, setState) {
+          return Container(
+            padding:
+                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Filter',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      minWidth: 40,
+                      height: 40,
+                      color: Colors.grey.shade300,
+                      elevation: 0,
+                      padding: const EdgeInsets.all(0),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50)),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.black,
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const Text(
+                  'পরিমান',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: size.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedSize = index;
+                          });
                         },
-                        minWidth: 40,
-                        height: 40,
-                        color: Colors.grey.shade300,
-                        elevation: 0,
-                        padding: const EdgeInsets.all(0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)
-                        ),
-                        child: const Icon(Icons.close, color: Colors.black,),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20,),
-                  const Text('পরিমান', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                  const SizedBox(height: 10,),
-                  Container(
-                    height: 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: size.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedSize = index;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 500),
-                            margin: const EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              color: _selectedSize == index ? Colors.lightGreen[800] : Colors.grey.shade200,
-                              shape: BoxShape.circle
-                            ),
-                            width: 40,
-                            height: 40,
-                            child: Center(
-                              child: Text(size[index].toString(), style: TextStyle(color: _selectedSize == index ? Colors.white : Colors.black, fontSize: 15),),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                              color: _selectedSize == index
+                                  ? Colors.lightGreen[800]
+                                  : Colors.grey.shade200,
+                              shape: BoxShape.circle),
+                          width: 40,
+                          height: 40,
+                          child: Center(
+                            child: Text(
+                              size[index].toString(),
+                              style: TextStyle(
+                                  color: _selectedSize == index
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontSize: 15),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Slider Price Renge filter
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Price Range',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  // Slider Price Renge filter
-                  const SizedBox(height: 20,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Price Range', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text('\৳ ${selectedRange.start.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12),),
-                          Text(" - ", style: TextStyle(color: Colors.grey.shade500)),
-                          Text('\৳ ${selectedRange.end.toStringAsFixed(2)}', style: TextStyle(color: Colors.grey.shade500, fontSize: 12),),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10,),
-                  RangeSlider(
-                    values: selectedRange, 
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          '\৳ ${selectedRange.start.toStringAsFixed(2)}',
+                          style: TextStyle(
+                              color: Colors.grey.shade500, fontSize: 12),
+                        ),
+                        Text(" - ",
+                            style: TextStyle(color: Colors.grey.shade500)),
+                        Text(
+                          '\৳ ${selectedRange.end.toStringAsFixed(2)}',
+                          style: TextStyle(
+                              color: Colors.grey.shade500, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                RangeSlider(
+                    values: selectedRange,
                     min: 0.00,
                     max: 2000.00,
                     divisions: 100,
                     inactiveColor: Colors.grey.shade300,
                     activeColor: Colors.lightGreen[800],
-                    labels: RangeLabels('\৳ ${selectedRange.start.toStringAsFixed(2)}', '\৳ ${selectedRange.end.toStringAsFixed(2)}',),
+                    labels: RangeLabels(
+                      '\৳ ${selectedRange.start.toStringAsFixed(2)}',
+                      '\৳ ${selectedRange.end.toStringAsFixed(2)}',
+                    ),
                     onChanged: (RangeValues values) {
                       setState(() => selectedRange = values);
-                    }
-                  ),
-                  const SizedBox(height: 20,),
-                  button('Filter', () {
-
-                  })
-                ],
-              ),
-            );
-          }
-        );
+                    }),
+                const SizedBox(
+                  height: 20,
+                ),
+                button('Filter', () {})
+              ],
+            ),
+          );
+        });
       },
     );
   }
 
-  addToCartModal(DocumentSnapshot<Object?> documentSnapshot) async{
-
+  addToCartModal(DocumentSnapshot<Object?> documentSnapshot) async {
     List<FarmerModel> farmerList = [];
     int? selectedFarmerIndex;
 
     List<dynamic> productOwners = documentSnapshot['product_owner'];
-    farmerList = productOwners.map((owner) => FarmerModel(owner, false)).toList();
+    farmerList =
+        productOwners.map((owner) => FarmerModel(owner, false)).toList();
     setState(() {});
-
 
     return showModalBottomSheet(
       context: context,
@@ -686,7 +814,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                   children: [
                     const Text(
                       "পরিমান",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                     Container(
                       height: 60,
@@ -731,7 +860,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     const SizedBox(height: 10),
                     Text(
                       'ফারমার লিস্ট :',
-                      style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+                      style:
+                          TextStyle(color: Colors.grey.shade400, fontSize: 18),
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -739,8 +869,10 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       child: ListView.builder(
                         itemCount: farmerList.length,
                         scrollDirection: Axis.vertical,
-                        shrinkWrap: true, // Allows the ListView to wrap its content
-                        physics: const NeverScrollableScrollPhysics(), // Disables scrolling
+                        shrinkWrap: true,
+                        // Allows the ListView to wrap its content
+                        physics: const NeverScrollableScrollPhysics(),
+                        // Disables scrolling
                         itemBuilder: (context, index) {
                           return SingleFarmerItem(
                             index: index,
@@ -749,7 +881,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               setState(() {
                                 selectedFarmerIndex = index;
                                 for (int i = 0; i < farmerList.length; i++) {
-                                  farmerList[i].isFarmerSelected = (i == selectedFarmerIndex);
+                                  farmerList[i].isFarmerSelected =
+                                      (i == selectedFarmerIndex);
                                 }
                               });
                             },
@@ -759,13 +892,44 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   ],
                 ),
-                button('কার্টে যোগ করুন', () async{
+                button('কার্টে যোগ করুন', () async {
+                  User? userCredential =
+                      await FirebaseAuth.instance.currentUser;
 
-                  User? userCredential = await FirebaseAuth.instance
-                      .currentUser;
+                  if (!await _networkInfo.isConnected) {
+                    const snackbar = SnackBar(
+                      content: Text("No internet available!"),
+                      duration: Duration(seconds: 5),
+                    );
 
-                  totalPrice = ((documentSnapshot['product_price'] as int)*
-                      size[_selectedSize]).toString();
+                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                    return;
+                  }
+
+                  if (userCredential == null) {
+                    const snackbar = SnackBar(
+                      content: Text("No user is currently logged in."),
+                      duration: Duration(seconds: 5),
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                    return;
+                  }
+
+                  if (selectedFarmerIndex == null) {
+                    const snackbar = SnackBar(
+                      content: Text("First select a farmer!"),
+                      duration: Duration(seconds: 5),
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                    Navigator.pop(context);
+                    return;
+                  }
+
+                  totalPrice = ((documentSnapshot['product_price'] as int) *
+                          size[_selectedSize])
+                      .toString();
 
                   await FirestoreServices.addItemToCart(
                       userCredential!.uid,
@@ -799,7 +963,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         },
       ),
     );
-
   }
 
   button(String text, Function onPressed) {
@@ -808,12 +971,13 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
       height: 50,
       elevation: 0,
       splashColor: Colors.lightGreen[700],
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10)
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       color: Colors.lightGreen[800],
       child: Center(
-        child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 18),),
+        child: Text(
+          text,
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        ),
       ),
     );
   }
