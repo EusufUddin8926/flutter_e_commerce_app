@@ -27,7 +27,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
-    
+
     fullNameController.addListener(_updateSaveButtonState);
     emailController.addListener(_updateSaveButtonState);
     phoneNumberController.addListener(_updateSaveButtonState);
@@ -40,14 +40,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     emailController.removeListener(_updateSaveButtonState);
     phoneNumberController.removeListener(_updateSaveButtonState);
     addressController.removeListener(_updateSaveButtonState);
+    fullNameController.dispose();
+    emailController.dispose();
+    phoneNumberController.dispose();
+    addressController.dispose();
     super.dispose();
   }
 
   void _updateSaveButtonState() {
-    setState(() {
-      // This empty setState will trigger a rebuild,
-      // which will re-evaluate _canSaveProfile()
-    });
+    if (mounted) {
+      setState(() {
+        // This empty setState will trigger a rebuild,
+        // which will re-evaluate _canSaveProfile()
+      });
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -56,14 +62,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       DocumentSnapshot doc = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
       if (doc.exists) {
         Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
-        if (data != null) {
+        if (data != null && mounted) {
           setState(() {
             userProfile = UserProfile(
               fullName: data['fullName'] ?? '',
               email: data['email'] ?? '',
               phoneNumber: data['phone_number'] ?? '',
               address: data['address'] ?? '',
-              profilePhotoUrl: data['profilePhotoUrl'] ?? '', 
+              profilePhotoUrl: data['profilePhotoUrl'] ?? '',
               type: data['type'] ?? '',
             );
             fullNameController.text = userProfile!.fullName;
@@ -98,9 +104,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         );
 
         _loadUserProfile();
-        setState(() {
-          _isEditing = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isEditing = false;
+          });
+        }
       } catch (e) {
         print('Error updating profile: $e');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,11 +128,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
-    });
+    if (mounted) {
+      setState(() {
+        if (pickedFile != null) {
+          _image = File(pickedFile.path);
+        }
+      });
+    }
   }
 
   bool _canSaveProfile() {
@@ -135,16 +145,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void _cancelEditing() {
-    setState(() {
-      _isEditing = false;
-      if (userProfile != null) {
-        fullNameController.text = userProfile!.fullName;
-        emailController.text = userProfile!.email;
-        phoneNumberController.text = userProfile!.phoneNumber;
-        addressController.text = userProfile!.address;
-        _image = null;
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _isEditing = false;
+        if (userProfile != null) {
+          fullNameController.text = userProfile!.fullName;
+          emailController.text = userProfile!.email;
+          phoneNumberController.text = userProfile!.phoneNumber;
+          addressController.text = userProfile!.address;
+          _image = null;
+        }
+      });
+    }
   }
 
   @override
@@ -170,9 +182,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       }
                     }
                   : () {
-                      setState(() {
-                        _isEditing = !_isEditing;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _isEditing = !_isEditing;
+                        });
+                      }
                     },
             ),
             IconButton(
@@ -272,6 +286,4 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 }
-
-
 

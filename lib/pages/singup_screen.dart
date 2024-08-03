@@ -13,13 +13,11 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
-
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Container(
-          height: MediaQuery.sizeOf(context).height,
+          height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -43,7 +41,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 padding: const EdgeInsets.only(top: 48.0),
                 child: ListView(
                   children: [
-                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.03),
+                    // Add logo here
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 200, // Adjust the height as needed
+                      width: 200, // Adjust the width as needed
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                     Text(
                       "Registration Screen",
                       textAlign: TextAlign.center,
@@ -55,18 +59,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 15),
                     Text(
-                      "Welcome to Krishi!",
+                      "কৃষিতে আপনাকে স্বাগতম",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18, color: textColor2, height: 1.2),
                     ),
-                    SizedBox(height: MediaQuery.sizeOf(context).height * 0.08),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.08),
                     // for username and password
                     myTextField("Enter Email", Colors.white, emailController),
                     myTextField("Password", Colors.black26, passwordController),
                     myTextField("Enter Full Name", Colors.white, fullNameController),
                     myTextField("Enter Address", Colors.white, addressController),
                     myTextField("Enter Phone Number", Colors.white, phoneNumberController),
-                    SizedBox(height: MediaQuery.sizeOf(context).height*0.03,),
+                    SizedBox(height: MediaQuery.of(context).size.height*0.03,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25),
                       child: Column(
@@ -78,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   emailController.text.toString(), passwordController.text.toString(), fullNameController.text.toString(),addressController.text.toString(),phoneNumberController.text.toString() ,context);
                             },
                             child: Container(
-                              width: MediaQuery.sizeOf(context).width,
+                              width: MediaQuery.of(context).size.width,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: buttonColor,
@@ -96,40 +100,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                             ),
                           ),
-                          /*SizedBox(height: MediaQuery.sizeOf(context).height * 0.06),
-                          *//*Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                height: 2,
-                                width: MediaQuery.sizeOf(context).width * 0.2,
-                                color: Colors.black12,
-                              ),
-                              Text(
-                                "  Or continue with   ",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: textColor2,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              Container(
-                                height: 2,
-                                width: MediaQuery.sizeOf(context).width * 0.2,
-                                color: Colors.black12,
-                              ),
-                            ],
-                          ),*//*
-                          SizedBox(height: MediaQuery.sizeOf(context).height * 0.06),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              socialIcon("images/google.png"),
-                              socialIcon("images/apple.png"),
-                              socialIcon("images/facebook.png"),
-                            ],
-                          ),*/
-                          SizedBox(height: MediaQuery.sizeOf(context).height * 0.07),
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.07),
                           GestureDetector(
                             onTap: (){
                               Navigator.push(context, MaterialPageRoute(builder: (context) => const SignInScreen()));
