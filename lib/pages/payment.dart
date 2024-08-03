@@ -1,11 +1,18 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/models/order_model.dart';
 import 'package:flutter_e_commerce_app/pages/payment_success.dart';
+import 'package:flutter_e_commerce_app/service/firestore_service.dart';
 
 import '../animation/FadeAnimation.dart';
+import '../models/product.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({Key? key}) : super(key: key);
+  final List<Product> cartItems;
+  final int totalPrice;
+
+   PaymentPage({Key? key, required this.cartItems, required this.totalPrice}) : super(key: key);
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
@@ -14,8 +21,9 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   int activeCard = 0;
   bool _isLoading = false;
-  bool _showAddressField = false; // State variable to control the visibility of the address field
+  bool _showAddressField = false;
   late Timer _timer;
+  String shippingAddress = "";
 
   pay() {
     setState(() {
@@ -251,7 +259,10 @@ class _PaymentPageState extends State<PaymentPage> {
                               ? Border.all(color: Colors.grey.shade300, width: 1)
                               : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
                         ),
-                        child: const Text("COD"),
+                        child:  const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Text("COD"),
+                        ),
                       ),
                     ),
                     GestureDetector(
@@ -270,13 +281,16 @@ class _PaymentPageState extends State<PaymentPage> {
                               ? Border.all(color: Colors.grey.shade300, width: 1)
                               : Border.all(color: Colors.grey.shade300.withOpacity(0), width: 1),
                         ),
-                        child: const Text("Bkash"),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Text("Bkash"),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+             /* const SizedBox(height: 30),
               FadeAnimation(
                 1.4,
                 Container(
@@ -301,7 +315,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     ],
                   ),
                 ),
-              ),
+              ),*/
               const SizedBox(height: 20),
               FadeAnimation(
                 1.5,
@@ -334,10 +348,13 @@ class _PaymentPageState extends State<PaymentPage> {
                       ),
                     ),
                     if (_showAddressField)
-                      const Padding(
+                       Padding(
                         padding: EdgeInsets.only(top: 20.0),
                         child: TextField(
-                          decoration: InputDecoration(
+                          onChanged: (value) {
+                            shippingAddress = value;
+                          },
+                          decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'শিপিং ঠিকানা লিখুন',
                           ),
@@ -359,7 +376,9 @@ class _PaymentPageState extends State<PaymentPage> {
                 1.6,
                 Center(
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : pay,
+                    onPressed: () async{
+                    await confirmOrder(widget.cartItems);
+                    },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
@@ -380,5 +399,26 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
       ),
     );
+  }
+
+  Future<void> confirmOrder(List<Product> cartItems) async{
+   setState(() {
+     _isLoading = true;
+   });
+
+    for(Product product in cartItems){
+      var timeStamp  = DateTime.now().millisecondsSinceEpoch;
+      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), "12345678", FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "On the way", activeCard.toString(), shippingAddress, 0));
+    }
+   FirestoreServices.removeAllCartItemsFromFirestore();
+
+    setState(() {
+      _isLoading = false;
+    });
+    if(!_isLoading){
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
+    }
+
+
   }
 }

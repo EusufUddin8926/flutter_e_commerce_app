@@ -763,11 +763,13 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
                   User? userCredential = await FirebaseAuth.instance
                       .currentUser;
+
                   totalPrice = ((documentSnapshot['product_price'] as int)*
                       size[_selectedSize]).toString();
 
                   await FirestoreServices.addItemToCart(
-                      userCredential!.uid.toString(),
+                      userCredential!.uid,
+                      DateTime.now().millisecondsSinceEpoch.toString(),
                       documentSnapshot['product_name'],
                       documentSnapshot['brand'],
                       documentSnapshot['product_price'],

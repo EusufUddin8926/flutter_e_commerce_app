@@ -147,7 +147,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               padding: const EdgeInsets.all(20.0),
               child: MaterialButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  PaymentPage(cartItems: cartItems, totalPrice: totalPrice,)));
                 },
                 height: 45, // Reduced height
                 elevation: 0,
