@@ -1,27 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/models/order_model.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-
-class Product {
-  final String status;
-  final String name;
-  final String brand;
-  final String details;
-  final String id;
-  final String imageURL;
-  final String owner;
-  final int price;
-
-  Product({
-    required this.status,
-    required this.name,
-    required this.brand,
-    required this.details,
-    required this.id,
-    required this.imageURL,
-    required this.owner,
-    required this.price,
-  });
-}
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({Key? key}) : super(key: key);
@@ -31,52 +13,11 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
-  final List<Product> products = [
-    Product(
-      status: 'On the way',
-      name: 'মসুর ডাল',
-      brand: 'Dal',
-      details:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae nulla erat. Nullam et velit nec neque luctus dapibus ac at velit.',
-      id: '1720730211',
-      imageURL:
-          'https://images.othoba.com/images/thumbs/0106868_mushur-dal-loose-1kg.jpeg',
-      owner: 'Md Siyamul islam',
-      price: 139,
-    ),
-    Product(
-      status: 'Delivered',
-      name: 'কাটারী ভোগ',
-      brand: 'Chal',
-      details:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae nulla erat. Nullam et velit nec neque luctus dapibus ac at velit.',
-      id: '1720730212',
-      imageURL:
-          'https://chefcart.com.bd/wp-content/uploads/2019/05/Najirshail-Rice-1.jpg',
-      owner: 'Md Eusuf Uddin',
-      price: 60,
-    ),
-    Product(
-      status: 'Order taken',
-      name: 'কাটারী ভোগ',
-      brand: 'Chal',
-      details:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae nulla erat. Nullam et velit nec neque luctus dapibus ac at velit.',
-      id: '1720730213',
-      imageURL:
-          'https://chefcart.com.bd/wp-content/uploads/2019/05/Najirshail-Rice-1.jpg',
-      owner: 'Md Eusuf Uddin',
-      price: 60,
-    ),
-  ];
-
   String selectedStatus = 'All';
 
   @override
   Widget build(BuildContext context) {
-    List<Product> filteredProducts = selectedStatus == 'All'
-        ? products
-        : products.where((product) => product.status == selectedStatus).toList();
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -98,38 +39,93 @@ class _OrdersPageState extends State<OrdersPage> {
           }).toList(),
         ),
       ),
-      body: ListView.builder(
-        itemCount: filteredProducts.length,
-        itemBuilder: (context, index) {
-          return ProductItem(product: filteredProducts[index]);
+      body: user == null
+          ? const Center(child: Text('No user is currently logged in.'))
+          : StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('Order')
+            .where('customerId', isEqualTo: user.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error fetching orders.'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No orders found.'));
+          }
+
+          List<OrderModel> orders = snapshot.data!.docs.map((doc) {
+            return OrderModel.fromJson(doc.data() as Map<String, dynamic>);
+          }).toList();
+
+          List<OrderModel> filteredOrders = selectedStatus == 'All'
+              ? orders
+              : orders.where((order) => order.orderStatus == selectedStatus).toList();
+
+          return ListView.builder(
+            itemCount: filteredOrders.length,
+            itemBuilder: (context, index) {
+              return OrderItem(orderModel: filteredOrders[index]);
+            },
+          );
         },
       ),
     );
   }
 }
 
-class ProductItem extends StatefulWidget {
-  final Product product;
+class OrderItem extends StatefulWidget {
+  final OrderModel orderModel;
 
-  const ProductItem({super.key, required this.product});
+  const OrderItem({super.key, required this.orderModel});
 
   @override
-  _ProductItemState createState() => _ProductItemState();
+  _OrderItemState createState() => _OrderItemState();
 }
 
-class _ProductItemState extends State<ProductItem> {
+class _OrderItemState extends State<OrderItem> {
   double _rating = 0;
   bool _ratingSubmitted = false;
 
-  void _submitRating() {
+  @override
+  void initState() {
+    super.initState();
+    _rating = widget.orderModel.orderRating;
+    _ratingSubmitted = widget.orderModel.orderRating > 0;
+  }
+
+  Future<void> _submitRating() async {
     setState(() {
       _ratingSubmitted = true;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Rating submitted'),
-      ),
-    );
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('Order')
+          .doc(widget.orderModel.orderId)
+          .update({'orderRating': _rating});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rating submitted'),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _ratingSubmitted = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit rating: $e'),
+        ),
+      );
+    }
   }
 
   @override
@@ -145,11 +141,11 @@ class _ProductItemState extends State<ProductItem> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.product.name,
+                  widget.orderModel.productName,
                   style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'orderID: ${widget.product.id}',
+                  'orderID: ${widget.orderModel.orderId}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -162,14 +158,13 @@ class _ProductItemState extends State<ProductItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Owner: ${widget.product.owner}'), // Assuming product details represent status
-                      // SizedBox(height: 4.0),
+                      Text('Owner: ${widget.orderModel.sellerName}'),
                     ],
                   ),
                 ),
                 const SizedBox(width: 16.0),
                 Text(
-                  'Total Price: \$${widget.product.price}',
+                  'Total Price: \$${widget.orderModel.total_price}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -182,13 +177,12 @@ class _ProductItemState extends State<ProductItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Status: ${widget.product.status}'),
-                       // Assuming product details represent status
+                      Text('Status: ${widget.orderModel.orderStatus}'),
                       const SizedBox(height: 4.0),
                       TweenAnimationBuilder<double>(
                         tween: Tween<double>(
                           begin: 0,
-                          end: getStatusProgress(widget.product.status),
+                          end: getStatusProgress(widget.orderModel.orderStatus),
                         ),
                         duration: const Duration(seconds: 1),
                         builder: (context, value, child) {
@@ -202,14 +196,14 @@ class _ProductItemState extends State<ProductItem> {
                 ),
               ],
             ),
-            if (widget.product.status == 'Delivered' && !_ratingSubmitted) ...[
+            if (widget.orderModel.orderStatus == 'Delivered' && !_ratingSubmitted) ...[
               const SizedBox(height: 8.0),
               const Text('Rate this product:'),
               RatingBar.builder(
                 initialRating: _rating,
                 minRating: 1,
                 direction: Axis.horizontal,
-                allowHalfRating: true,
+                allowHalfRating: false,
                 itemCount: 5,
                 itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
                 itemBuilder: (context, _) => const Icon(
@@ -258,3 +252,4 @@ class _ProductItemState extends State<ProductItem> {
     }
   }
 }
+

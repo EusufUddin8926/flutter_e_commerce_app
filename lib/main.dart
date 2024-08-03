@@ -64,6 +64,7 @@ class _HomePageState extends State<HomePage> {
           _selectedPage = index;
         }),
         controller: _pageController,
+        physics: NeverScrollableScrollPhysics(),
         children: pages,
       ),
       bottomNavigationBar: FlashyTabBar(
