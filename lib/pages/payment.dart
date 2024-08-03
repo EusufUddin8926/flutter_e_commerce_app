@@ -408,7 +408,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     for(Product product in cartItems){
       var timeStamp  = DateTime.now().millisecondsSinceEpoch;
-      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), "12345678", FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "On the way", activeCard.toString(), shippingAddress, 0));
+      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), "12345678", FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, (int.parse(product.total_price.toString())+100).toString(), "On the way", activeCard.toString(), shippingAddress, 0));
     }
    FirestoreServices.removeAllCartItemsFromFirestore();
 

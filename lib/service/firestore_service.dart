@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_e_commerce_app/models/order_model.dart';
 
+import '../models/product.dart';
+
 class FirestoreServices {
 
 
@@ -107,7 +109,41 @@ class FirestoreServices {
   }
 
 
+ static Future<void> removeItemFromFirestore(Product product) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("user")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("cart_item")
+          .doc(product.uid)
+          .delete();
+      if (kDebugMode) {
+        print('Item removed from Firestore successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error removing item from Firestore: $e');
+      }
+    }
+  }
 
+ static Future<void> updateItemInFirestore(Product product) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection("user")
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection("cart_item")
+          .doc(product.uid)
+          .update(product.toJson());
+      if (kDebugMode) {
+        print('Item updated in Firestore successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating item in Firestore: $e');
+      }
+    }
+  }
 
 
 

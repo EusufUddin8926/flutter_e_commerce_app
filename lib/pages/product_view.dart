@@ -1,13 +1,12 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/components/single_farmer_item.dart';
+import 'package:flutter_e_commerce_app/helpers/network_info.dart';
 import 'package:flutter_e_commerce_app/models/farmer_model.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../service/firestore_service.dart';
 
@@ -37,11 +36,13 @@ class _ProductViewPageState extends State<ProductViewPage> {
   List<FarmerModel> farmerList = [];
   int? selectedFarmerIndex;
   late String totalPrice, unitPrice, amount, seller_name;
+  late NetworkInfo _networkInfo;
 
 
   @override
   void initState() {
     super.initState();
+    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
     _initializeFarmerList();
     configLoading();
   }
@@ -291,9 +292,44 @@ class _ProductViewPageState extends State<ProductViewPage> {
                         horizontal: 20, vertical: 10),
                     child: MaterialButton(
                       onPressed: () async {
-                        EasyLoading.show(status: "Update Cart...");
+
                         User? userCredential = await FirebaseAuth.instance
                             .currentUser;
+
+                        if(!await _networkInfo.isConnected){
+                          const snackbar = SnackBar(
+                            content: Text("No internet available!"),
+                            duration: Duration(seconds: 5),
+                          );
+
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                          return;
+                        }
+
+                        if(userCredential == null){
+                          const snackbar = SnackBar(
+                            content: Text("No user is currently logged in."),
+                            duration: Duration(seconds: 5),
+                          );
+
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                          return;
+                        }
+
+                        if(selectedFarmerIndex == null){
+                          const snackbar = SnackBar(
+                            content: Text("First select a farmer!"),
+                            duration: Duration(seconds: 5),
+                          );
+
+                          ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                          return;
+                        }
+
+
+
+                        EasyLoading.show(status: "Update Cart...");
+
                         totalPrice = ((widget.documentSnapshot['product_price'] as int)*
                             size[_selectedSize]).toString();
 

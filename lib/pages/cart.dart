@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_e_commerce_app/service/firestore_service.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../animation/FadeAnimation.dart';
 import '../models/product.dart';
@@ -23,9 +22,12 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   Future<void> fetchItems() async {
+    var user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     var query = await FirebaseFirestore.instance
         .collection("user")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .doc(user.uid)
         .collection("cart_item")
         .get();
     for (var cartItem in query.docs) {
@@ -47,13 +49,20 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() {
-    // Any clean-up operations if necessary
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          title: const Text('কার্ট', style: TextStyle(color: Colors.black)),
+        ),
+        body: const Center(child: Text('No user is currently logged in.')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -71,7 +80,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
         children: <Widget>[
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            height: MediaQuery.of(context).size.height * 0.5, // Reduced height
+            height: MediaQuery.of(context).size.height * 0.5,
             child: FadeAnimation(
               1.4,
               AnimatedList(
@@ -101,7 +110,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               ),
             ),
           ),
-          const SizedBox(height: 20), // Reduced height
+          const SizedBox(height: 20),
           FadeAnimation(
             1.2,
             Container(
@@ -109,8 +118,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text('শিপিং চার্জ', style: TextStyle(fontSize: 18)), // Reduced font size
-                  Text('\৳100', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                  Text('শিপিং চার্জ', style: TextStyle(fontSize: 18)),
+                  Text('\৳100', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -118,7 +127,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           FadeAnimation(
             1.3,
             Padding(
-              padding: const EdgeInsets.all(15.0), // Reduced padding
+              padding: const EdgeInsets.all(15.0),
               child: DottedBorder(
                 color: Colors.grey.shade400,
                 dashPattern: const [10, 10],
@@ -134,8 +143,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  const Text('মোট', style: TextStyle(fontSize: 18)), // Reduced font size
-                  Text('\৳${totalPrice + 100}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // Reduced font size
+                  const Text('মোট', style: TextStyle(fontSize: 18)),
+                  Text('\৳${totalPrice + 100}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -147,9 +156,9 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               padding: const EdgeInsets.all(20.0),
               child: MaterialButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) =>  PaymentPage(cartItems: cartItems, totalPrice: totalPrice,)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage(cartItems: cartItems, totalPrice: totalPrice,)));
                 },
-                height: 45, // Reduced height
+                height: 45,
                 elevation: 0,
                 splashColor: Colors.lightGreen[700],
                 shape: RoundedRectangleBorder(
@@ -159,7 +168,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 child: const Center(
                   child: Text(
                     "চেকআউট",
-                    style: TextStyle(color: Colors.white, fontSize: 16), // Reduced font size
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ),
@@ -201,32 +210,12 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
         duration: const Duration(milliseconds: 300),
       );
     }
-    // Remove item from Firestore
-    await removeItemFromFirestore(removedProduct);
+
+    await FirestoreServices.removeItemFromFirestore(removedProduct);
     totalPrice -= int.parse(cartItems[index].total_price);
     cartItems.removeAt(index);
     if (mounted) {
-      setState(() {
-
-      });
-    }
-  }
-
-  Future<void> removeItemFromFirestore(Product product) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("user")
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection("cart_item")
-          .doc(product.uid)
-          .delete();
-      if (kDebugMode) {
-        print('Item removed from Firestore successfully.');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error removing item from Firestore: $e');
-      }
+      setState(() {});
     }
   }
 
@@ -241,7 +230,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           end: Offset.zero,
         ).animate(animation),
         child: Container(
-          margin: const EdgeInsets.only(bottom: 15), // Reduced margin
+          margin: const EdgeInsets.only(bottom: 15),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -263,8 +252,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                   child: Image.network(
                     product.product_img,
                     fit: BoxFit.cover,
-                    height: 80, // Reduced height
-                    width: 80, // Reduced width
+                    height: 80,
+                    width: 80,
                   ),
                 ),
               ),
@@ -276,30 +265,30 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                       product.productBrand,
                       style: TextStyle(
                         color: Colors.lightGreen.shade400,
-                        fontSize: 12, // Reduced font size
+                        fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 3), // Reduced spacing
+                    const SizedBox(height: 3),
                     Text(
                       product.productName,
                       style: const TextStyle(
-                        fontSize: 16, // Reduced font size
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 10), // Reduced spacing
+                    const SizedBox(height: 10),
                     Text(
                       '\৳${product.product_price}',
                       style: TextStyle(
-                        fontSize: 18, // Reduced font size
+                        fontSize: 18,
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    const SizedBox(height: 10), // Reduced spacing
+                    const SizedBox(height: 10),
                     Text(
                       product.sellerName,
                       style: TextStyle(
-                        fontSize: 15, // Reduced font size
+                        fontSize: 15,
                         color: Colors.grey.shade800,
                       ),
                     ),
@@ -323,10 +312,10 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
       children: <Widget>[
         buildQuantityButton(Icons.remove, product, index, false),
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10), // Reduced margin
+          margin: const EdgeInsets.symmetric(horizontal: 10),
           child: Text(
             product.product_amount,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600), // Reduced font size
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
         buildQuantityButton(Icons.add, product, index, true),
@@ -350,7 +339,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           }
           product.product_amount = currentAmount.toString();
           product.total_price = (currentAmount * product.product_price).toString();
-          updateItemInFirestore(product);
+          FirestoreServices.updateItemInFirestore(product);
         });
       },
       child: Container(
@@ -359,26 +348,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           shape: BoxShape.circle,
           color: Colors.grey.shade200,
         ),
-        child: Icon(icon, size: 16), // Reduced icon size
+        child: Icon(icon, size: 16),
       ),
     );
-  }
-
-  Future<void> updateItemInFirestore(Product product) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("user")
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection("cart_item")
-          .doc(product.uid)
-          .update(product.toJson());
-      if (kDebugMode) {
-        print('Item updated in Firestore successfully.');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error updating item in Firestore: $e');
-      }
-    }
   }
 }
