@@ -35,24 +35,30 @@ class _SignInScreenState extends State<SignInScreen> {
             padding: const EdgeInsets.only(top: 48.0),
             child: ListView(
               children: [
-                SizedBox(height: MediaQuery.sizeOf(context).height * 0.03),
+                // Logo
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 200, // Adjust as needed
+                  width: 200, // Adjust as needed
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.002),
                 Text(
                   "Hello Again!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 28,
+                    fontSize: 22,
                     color: textColor1,
                   ),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 12),
                 Text(
-                  "Wellcome back to Krishi \nyou've been missed!",
+                  "কৃষিতে আপনাকে স্বাগতম",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18, color: textColor2, height: 1.2),
                 ),
-                SizedBox(height: MediaQuery.sizeOf(context).height * 0.08),
-                // for username and password
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                // Username and password fields
                 myTextField("Enter username", Colors.white, usernameController),
                 myTextField("Password", Colors.black26, passwordController),
                 Align(
@@ -67,18 +73,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: MediaQuery.sizeOf(context).height * 0.04),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Column(
                     children: [
-                      // for sign in button
+                      // Sign in button
                       GestureDetector(
                         onTap: () {
                           AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
                         },
                         child: Container(
-                          width: MediaQuery.sizeOf(context).width,
+                          width: MediaQuery.of(context).size.width,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
                             color: buttonColor,
@@ -96,7 +102,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: MediaQuery.sizeOf(context).height * 0.07),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.07),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpScreen()));
