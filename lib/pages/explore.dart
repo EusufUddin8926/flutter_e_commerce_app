@@ -22,7 +22,6 @@ class ExplorePage extends StatefulWidget {
 class _ExplorePageState extends State<ExplorePage>
     with TickerProviderStateMixin {
   late ScrollController _scrollController;
-  bool _isScrolled = false;
   List<dynamic> productList = [];
   List<int> size = [
     1,
@@ -70,11 +69,9 @@ class _ExplorePageState extends State<ExplorePage>
   void _listenToScrollChange() {
     if (_scrollController.offset >= 100.0) {
       setState(() {
-        _isScrolled = true;
       });
     } else {
       setState(() {
-        _isScrolled = false;
       });
     }
   }
@@ -932,7 +929,7 @@ class _ExplorePageState extends State<ExplorePage>
                       .toString();
 
                   await FirestoreServices.addItemToCart(
-                      userCredential!.uid,
+                      userCredential.uid,
                       DateTime.now().millisecondsSinceEpoch.toString(),
                       documentSnapshot['product_name'],
                       documentSnapshot['brand'],

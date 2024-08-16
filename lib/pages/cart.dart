@@ -2,10 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_e_commerce_app/service/firestore_service.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../animation/FadeAnimation.dart';
-import '../models/product.dart';
+import '../models/product.dart';  // Import your Product model
 import 'payment.dart';
 
 class CartPage extends StatefulWidget {
@@ -17,7 +16,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   late List<Product> cartItems = [];
-  int totalPrice = 0;
+  double totalPrice = 0;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -31,13 +30,13 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
         .collection("cart_item")
         .get();
     for (var cartItem in query.docs) {
-      Product product = Product.fromJson(cartItem.data() as Map<String, dynamic>);
+      Product product = Product.fromJson(cartItem.data());
       cartItems.add(product);
     }
 
     if (mounted) {
       setState(() {
-        totalPrice = cartItems.fold(0, (sum, item) => sum + int.parse(item.total_price));
+        totalPrice = cartItems.fold(0, (sum, item) => sum + item.total_price);
       });
     }
   }
@@ -89,12 +88,12 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 initialItemCount: cartItems.length,
                 itemBuilder: (context, index, animation) {
                   return Slidable(
-                    key: Key(cartItems[index].toString()),
+                    key: Key(cartItems[index].uid),
                     startActionPane: ActionPane(
                       motion: const ScrollMotion(),
                       children: [
                         SlidableAction(
-                          onPressed: (BuildContext context) {
+                          onPressed: (_) {
                             removeItem(index);
                           },
                           backgroundColor: Colors.red.withOpacity(0.15),
@@ -144,7 +143,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   const Text('মোট', style: TextStyle(fontSize: 18)),
-                  Text('\৳${totalPrice + 100}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('\৳${(totalPrice + 100).toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -156,7 +155,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               padding: const EdgeInsets.all(20.0),
               child: MaterialButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage(cartItems: cartItems, totalPrice: totalPrice,)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage(cartItems: cartItems, totalPrice: totalPrice)));
                 },
                 height: 45,
                 elevation: 0,
@@ -203,7 +202,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
     if (_listKey.currentState != null) {
       _listKey.currentState!.removeItem(
         index,
-            (context, animation) => SizeTransition(
+        (context, animation) => SizeTransition(
           sizeFactor: animation,
           child: cartItem(cartItems[index], index, animation),
         ),
@@ -211,8 +210,18 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
       );
     }
 
-    await FirestoreServices.removeItemFromFirestore(removedProduct);
-    totalPrice -= int.parse(cartItems[index].total_price);
+    // Remove from Firestore
+    var user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance
+          .collection("user")
+          .doc(user.uid)
+          .collection("cart_item")
+          .doc(removedProduct.uid)
+          .delete();
+    }
+
+    totalPrice -= removedProduct.total_price;
     cartItems.removeAt(index);
     if (mounted) {
       setState(() {});
@@ -262,7 +271,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      product.productBrand,
+                      product.brand,
                       style: TextStyle(
                         color: Colors.lightGreen.shade400,
                         fontSize: 12,
@@ -270,7 +279,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      product.productName,
+                      product.product_name,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -278,7 +287,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '\৳${product.product_price}',
+                      '\৳${product.price}',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey.shade800,
@@ -325,22 +334,31 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
 
   Widget buildQuantityButton(IconData icon, Product product, int index, bool increment) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         setState(() {
           int currentAmount = int.parse(product.product_amount);
           if (increment) {
             currentAmount++;
-            totalPrice += product.product_price;
           } else {
             if (currentAmount > 1) {
               currentAmount--;
-              totalPrice -= product.product_price;
             }
           }
           product.product_amount = currentAmount.toString();
-          product.total_price = (currentAmount * product.product_price).toString();
-          FirestoreServices.updateItemInFirestore(product);
+          product.total_price = (currentAmount * product.price).toDouble();
+          totalPrice = cartItems.fold(0, (sum, item) => sum + item.total_price);
         });
+
+        // Update in Firestore
+        var user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await FirebaseFirestore.instance
+              .collection("user")
+              .doc(user.uid)
+              .collection("cart_item")
+              .doc(product.uid)
+              .update(product.toJson());
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(5),

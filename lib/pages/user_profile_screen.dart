@@ -1,8 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -267,10 +266,58 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 subtitle: Text(userProfile!.type),
               ),
             ],
+            const Divider(),
+            _buildTypeSpecificWidgets(),
           ],
         ),
       );
     }
+  }
+
+  // Build specific widgets based on user type
+  Widget _buildTypeSpecificWidgets() {
+    if (userProfile == null) return Container();
+
+    switch (userProfile!.type) {
+      case 'Consumer':
+        return _buildConsumerWidgets();
+      case 'Farmer':
+        return _buildFarmerWidgets();
+      case 'Agent':
+        return _buildAgentWidgets();
+      default:
+        return Container();
+    }
+  }
+
+  // Consumer-specific widgets
+  Widget _buildConsumerWidgets() {
+    return Column(
+      children: const [
+        Text('Consumer Specific Data'),
+        // Add more Consumer-specific widgets here
+      ],
+    );
+  }
+
+  // Farmer-specific widgets
+  Widget _buildFarmerWidgets() {
+    return Column(
+      children: const [
+        Text('Farmer Specific Data'),
+        // Add more Farmer-specific widgets here
+      ],
+    );
+  }
+
+  // Agent-specific widgets
+  Widget _buildAgentWidgets() {
+    return Column(
+      children: const [
+        Text('Agent Specific Data'),
+        // Add more Agent-specific widgets here
+      ],
+    );
   }
 
   Widget _buildTextField(TextEditingController controller, String labelText) {
@@ -287,3 +334,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 }
 
+class UserProfile {
+  final String fullName;
+  final String email;
+  final String phoneNumber;
+  final String address;
+  final String profilePhotoUrl;
+  final String type;
+
+  UserProfile({
+    required this.fullName,
+    required this.email,
+    required this.phoneNumber,
+    required this.address,
+    required this.profilePhotoUrl,
+    required this.type,
+  });
+}

@@ -56,7 +56,7 @@ class OrderModel {
   Map<String, dynamic> toJson() {
     return {
       "orderId": orderId,
-      "sellerId": sellerId,
+      "sellerId": productName,
       "customerId": customerId,
       "customerName": customerName,
       "productName": productName,

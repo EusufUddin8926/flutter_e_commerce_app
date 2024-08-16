@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/models/order_model.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -58,6 +57,9 @@ class _OrdersPageState extends State<OrdersPage> {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text('No orders found.'));
           }
+
+          // Debugging output
+          print('Orders data: ${snapshot.data!.docs.length} orders found.');
 
           List<OrderModel> orders = snapshot.data!.docs.map((doc) {
             return OrderModel.fromJson(doc.data() as Map<String, dynamic>);
@@ -145,7 +147,7 @@ class _OrderItemState extends State<OrderItem> {
                   style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'orderID: ${widget.orderModel.orderId}',
+                  'Order ID: ${widget.orderModel.orderId}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -247,9 +249,10 @@ class _OrderItemState extends State<OrderItem> {
         return 0.66;
       case 'Order taken':
         return 0.33;
+      case 'Pending':
+        return 0.0;
       default:
         return 0.0;
     }
   }
 }
-

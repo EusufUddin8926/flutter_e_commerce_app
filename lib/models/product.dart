@@ -1,52 +1,52 @@
 class Product {
   final String uid;
-  final String productName;
-  final String productBrand;
+  final String product_name;
+  final String brand;
   final String product_img;
   final String sellerName;
   String product_amount;
-  final int product_price;
-  String total_price;
+  final int price;
+  double total_price;
 
-  Product(
-      this.uid,
-      this.productName,
-      this.productBrand,
-      this.product_img,
-      this.sellerName,
-      this.product_amount,
-      this.product_price,
-      this.total_price
-      );
+  Product({
+    required this.uid,
+    required this.product_name,
+    required this.brand,
+    required this.product_img,
+    required this.sellerName,
+    required this.product_amount,
+    required this.price,
+    required this.total_price
+  });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-        json["uid"] as String,
-        json["product_name"] as String,
-        json["brand"] as String,
-        json["product_img"] as String,
-        json["sellerName"] as String,
-        json["product_amount"] as String,
-        json["price"] as int,
-        json["total_price"] as String
+      uid: json["uid"] as String,
+      product_name: json["product_name"] as String,
+      brand: json["brand"] as String,
+      product_img: json["product_img"] as String,
+      sellerName: json["sellerName"] as String,
+      product_amount: json["product_amount"] as String,
+      price: json["price"] as int,
+      total_price: (json["total_price"] as num).toDouble()
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       "uid": uid,
-      "productName": productName,
-      "productBrand": productBrand,
+      "product_name": product_name,
+      "brand": brand,
       "product_img": product_img,
       "sellerName": sellerName,
       "product_amount": product_amount,
-      "product_price": product_price,
+      "price": price,
       "total_price": total_price
     };
   }
 
   @override
   String toString() {
-    return 'Product{uid: $uid, productName: $productName, productBrand: $productBrand, product_img: $product_img, sellerName: $sellerName, product_amount: $product_amount,product_price: $product_price, total_price: $total_price}';
+    return 'Product{uid: $uid, product_name: $product_name, brand: $brand, product_img: $product_img, sellerName: $sellerName, product_amount: $product_amount, price: $price, total_price: $total_price}';
   }
 }
