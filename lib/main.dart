@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/pages/addproduct.dart';
 import 'package:flutter_e_commerce_app/pages/cart.dart';
 import 'package:flutter_e_commerce_app/pages/explore.dart';
 import 'package:flutter_e_commerce_app/pages/profile.dart'; 
@@ -35,12 +36,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late PageController _pageController;
   int _selectedPage = 0;
+  String? _userType;
+  bool _isLoading = true;
 
-  List<Widget> pages = [
+  List<Widget> consumerPages = [
     const ExplorePage(),
     const OrdersPage(),
     const CartPage(),
-    const ProfilePage() 
+    const ProfilePage(),
+  ];
+
+  List<Widget> farmerPages = [
+    AddFarmerProductPage(),
+    const FarmerOrdersPage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -53,6 +62,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _pageController = PageController(initialPage: 0);
+    _fetchUserType();
     super.initState();
   }
 
