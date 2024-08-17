@@ -334,7 +334,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                             size[_selectedSize]).toString();
 
                        await FirestoreServices.addItemToCart(
-                            userCredential!.uid,
+                            userCredential.uid,
                             DateTime.now().millisecondsSinceEpoch.toString(),
                             widget.documentSnapshot['product_name'],
                             widget.documentSnapshot['brand'],
