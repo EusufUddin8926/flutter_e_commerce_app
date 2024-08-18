@@ -51,17 +51,22 @@ class _ProductViewPageState extends State<ProductViewPage> {
   }
 
   void _initializeFarmerList() {
-  Map<String, dynamic> productOwnersMap = widget.documentSnapshot['product_owner'] as Map<String, dynamic>;
-  
-  farmerList = productOwnersMap.entries.map((entry) {
-    Map<String, dynamic> ownerDetails = entry.value as Map<String, dynamic>;
-    String fullName = ownerDetails['fullName'] as String;
+    // Fetch the array of farmer names from the product_owner field
+    List<dynamic> productOwnersList = widget.documentSnapshot['product_owner'] as List<dynamic>;
 
-    return FarmerModel(fullName, false);
-  }).toList();
+    // Convert the list of names into a list of FarmerModel instances
+    farmerList = productOwnersList.map((name) {
+      // Ensure each entry is a string
+      if (name is String) {
+        return FarmerModel(name, false);
+      } else {
+        throw Exception('Invalid data type in product_owner list');
+      }
+    }).toList();
 
-  setState(() {});
-}
+    setState(() {});
+  }
+
 
 
 
@@ -290,6 +295,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
       ),
     );
   }
+
 
   void _addToCart() async {
     User? userCredential = FirebaseAuth.instance.currentUser;

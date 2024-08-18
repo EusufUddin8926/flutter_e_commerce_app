@@ -39,40 +39,40 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   }
 
   void _loadProducts() async {
-  try {
-    QuerySnapshot mostPopularSnapshot = await FirebaseFirestore.instance.collection('Most Popular').get();
-    QuerySnapshot forYourselfSnapshot = await FirebaseFirestore.instance.collection('for yourself').get();
-    QuerySnapshot allProductSnapshot = await FirebaseFirestore.instance.collection('All Product').get();
+    try {
+      QuerySnapshot mostPopularSnapshot = await FirebaseFirestore.instance.collection('Most Popular').get();
+      QuerySnapshot forYourselfSnapshot = await FirebaseFirestore.instance.collection('for yourself').get();
+      QuerySnapshot allProductSnapshot = await FirebaseFirestore.instance.collection('All Product').get();
 
-    List<DocumentSnapshot> filteredOwnedProducts = [];
-    List<DocumentSnapshot> allProductList = [];
+      List<DocumentSnapshot> filteredOwnedProducts = [];
+      List<DocumentSnapshot> allProductList = [];
 
-    List<QuerySnapshot> snapshots = [mostPopularSnapshot, forYourselfSnapshot, allProductSnapshot];
+      List<QuerySnapshot> snapshots = [mostPopularSnapshot, forYourselfSnapshot, allProductSnapshot];
 
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
 
-    for (var snapshot in snapshots) {
-      for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        if (data['product_owner'] is Map) {
-          Map<String, dynamic> owners = Map<String, dynamic>.from(data['product_owner'] as Map);
-          if (owners.containsKey(currentUser.uid)) {
-            filteredOwnedProducts.add(doc);
+      for (var snapshot in snapshots) {
+        for (var doc in snapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          if (data['product_owner'] is List) {
+            List<dynamic> owners = List<dynamic>.from(data['product_owner'] as List);
+            if (owners.contains(userFullName)) {
+              filteredOwnedProducts.add(doc);
+            }
           }
+          allProductList.add(doc);
         }
-        allProductList.add(doc);
       }
-    }
 
-    setState(() {
-      ownedProducts = filteredOwnedProducts;
-      allProducts = allProductList;
-    });
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading products: $e')));
+      setState(() {
+        ownedProducts = filteredOwnedProducts;
+        allProducts = allProductList;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading products: $e')));
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -173,42 +173,42 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   }
 
   void removeItem(DocumentSnapshot document) async {
-  User? currentUser = FirebaseAuth.instance.currentUser;
-  if (currentUser == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
-    return;
-  }
-
-  try {
-    final productId = document.id;
-    final categoryName = _getCategoryName(document);
-
-    DocumentReference productRef = FirebaseFirestore.instance.collection(categoryName).doc(productId);
-
-    DocumentSnapshot productDoc = await productRef.get();
-    Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
-
-    if (productData != null && productData['product_owner'] is Map) {
-      Map<String, dynamic> productOwners = Map<String, dynamic>.from(productData['product_owner'] as Map);
-      
-      if (productOwners.containsKey(currentUser.uid)) {
-        productOwners.remove(currentUser.uid);
-
-        await productRef.update({
-          'product_owner': productOwners,
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product ownership updated')));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You do not own this product')));
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product owner data is invalid')));
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
+      return;
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
+
+    try {
+      final productId = document.id;
+      final categoryName = _getCategoryName(document);
+
+      DocumentReference productRef = FirebaseFirestore.instance.collection(categoryName).doc(productId);
+
+      DocumentSnapshot productDoc = await productRef.get();
+      Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
+
+      if (productData != null && productData['product_owner'] is List) {
+        List<dynamic> productOwners = List<dynamic>.from(productData['product_owner'] as List);
+
+        if (productOwners.contains(userFullName)) {
+          productOwners.remove(userFullName);
+
+          await productRef.update({
+            'product_owner': productOwners,
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product ownership updated')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You do not own this product')));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product owner data is invalid')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
+    }
   }
-}
 
   String _getCategoryName(DocumentSnapshot document) {
     final parentId = document.reference.parent.id;
@@ -225,70 +225,66 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   }
 
   void _submitForm() async {
-  User? currentUser = FirebaseAuth.instance.currentUser;
-  if (currentUser == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
-    return;
-  }
-
-  if (selectedProductId == null || selectedProductData == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No product selected')));
-    return;
-  }
-
-  try {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(currentUser.uid).get();
-    if (!userDoc.exists) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User profile not found')));
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
       return;
     }
 
-    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-    String userFullName = userData['fullName'] as String;
-
-    DocumentSnapshot selectedDoc = allProducts.firstWhere((doc) => doc.id == selectedProductId);
-    String collectionId = selectedDoc.reference.parent.id;
-
-    DocumentReference productRef = FirebaseFirestore.instance.collection(collectionId).doc(selectedProductId!);
-
-    DocumentSnapshot productDoc = await productRef.get();
-    if (!productDoc.exists) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
+    if (selectedProductId == null || selectedProductData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No product selected')));
       return;
     }
 
-    Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
-
-    if (productData != null) {
-      Map<String, dynamic> productOwners;
-
-      if (productData['product_owner'] is Map) {
-        productOwners = Map<String, dynamic>.from(productData['product_owner'] as Map);
-      } else {
-        productOwners = {};
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(currentUser.uid).get();
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User profile not found')));
+        return;
       }
 
-      if (!productOwners.containsKey(currentUser.uid)) {
-        productOwners[currentUser.uid] = {'fullName': userFullName};
-        await productRef.update({'product_owner': productOwners});
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      String userFullName = userData['fullName'] as String;
 
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product updated successfully')));
-        _loadProducts();
+      DocumentSnapshot selectedDoc = allProducts.firstWhere((doc) => doc.id == selectedProductId);
+      String categoryName = _getCategoryName(selectedDoc);
+      DocumentReference productRef = FirebaseFirestore.instance.collection(categoryName).doc(selectedProductId);
+
+      DocumentSnapshot productDoc = await productRef.get();
+      Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
+
+      if (productData != null && productData['product_owner'] is List) {
+        List<dynamic> productOwners = List<dynamic>.from(productData['product_owner'] as List);
+
+        if (!productOwners.contains(userFullName)) {
+          productOwners.add(userFullName);
+
+          await productRef.update({
+            'product_owner': productOwners,
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product added successfully')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You already own this product')));
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You have already added this product')));
-      }
+        await productRef.update({
+          'product_owner': [userFullName],
+        });
 
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product added successfully')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding product: $e')));
+    } finally {
+      // Reset the selected product regardless of success or failure
       setState(() {
         selectedProductId = null;
         selectedProductData = null;
       });
 
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
+      _loadProducts(); // Refresh the list of owned products
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
   }
-}
 
 }

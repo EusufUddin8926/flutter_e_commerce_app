@@ -16,7 +16,7 @@ class Product {
     required this.sellerName,
     required this.product_amount,
     required this.price,
-    required this.total_price
+    required this.total_price,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -27,8 +27,8 @@ class Product {
       product_img: json["product_img"] as String,
       sellerName: json["sellerName"] as String,
       product_amount: json["product_amount"] as String,
-      price: json["price"] as int,
-      total_price: (json["total_price"] as num).toDouble()
+      price: int.tryParse(json["price"].toString()) ?? 0, // Handle price conversion
+      total_price: double.tryParse(json["total_price"].toString()) ?? 0.0, // Handle total_price conversion
     );
   }
 
@@ -41,7 +41,7 @@ class Product {
       "sellerName": sellerName,
       "product_amount": product_amount,
       "price": price,
-      "total_price": total_price
+      "total_price": total_price,
     };
   }
 
