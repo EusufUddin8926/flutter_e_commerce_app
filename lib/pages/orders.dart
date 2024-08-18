@@ -29,7 +29,7 @@ class _OrdersPageState extends State<OrdersPage> {
               selectedStatus = newValue!;
             });
           },
-          items: <String>['All', 'On the way', 'Delivered', 'Order taken']
+          items: <String>['All', 'Pending', 'On the way', 'Delivered', 'Order taken']
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -58,9 +58,6 @@ class _OrdersPageState extends State<OrdersPage> {
             return const Center(child: Text('No orders found.'));
           }
 
-          // Debugging output
-          print('Orders data: ${snapshot.data!.docs.length} orders found.');
-
           List<OrderModel> orders = snapshot.data!.docs.map((doc) {
             return OrderModel.fromJson(doc.data() as Map<String, dynamic>);
           }).toList();
@@ -84,7 +81,7 @@ class _OrdersPageState extends State<OrdersPage> {
 class OrderItem extends StatefulWidget {
   final OrderModel orderModel;
 
-  const OrderItem({super.key, required this.orderModel});
+  const OrderItem({Key? key, required this.orderModel}) : super(key: key);
 
   @override
   _OrderItemState createState() => _OrderItemState();
