@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/order_model.dart';
 import '../models/product.dart';
+import '../service/firestore_service.dart';
 import 'payment_success.dart'; // Import the PaymentSuccess page
 
 class PaymentPage extends StatefulWidget {
@@ -16,6 +18,7 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
   String? selectedPaymentMethod;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +46,10 @@ class _PaymentPageState extends State<PaymentPage> {
             buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),
             const SizedBox(height: 30),
             MaterialButton(
-              onPressed: () {
+              onPressed: () async{
                 if (selectedPaymentMethod != null) {
-                  processPayment().then((_) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PaymentSuccess()),
-                    );
-                  });
+                 await confirmOrder(widget.cartItems);
+
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Please select a payment method')),
@@ -104,27 +103,26 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  Future<void> processPayment() async {
-    // Implement the payment processing logic here.
-    // For example, you could call a payment API hezre.
 
-    // After payment is successful, clear the cart
-    await clearCart();
-  }
 
-  Future<void> clearCart() async {
-    var user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+  Future<void> confirmOrder(List<Product> cartItems) async{
+    setState(() {
+      _isLoading = true;
+    });
 
-    var batch = FirebaseFirestore.instance.batch();
-    for (var item in widget.cartItems) {
-      var cartItemRef = FirebaseFirestore.instance
-          .collection("user")
-          .doc(user.uid)
-          .collection("cart_item")
-          .doc(item.uid);
-      batch.delete(cartItemRef);
+    for(Product product in cartItems){
+      var timeStamp  = DateTime.now().millisecondsSinceEpoch;
+      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), "12345678", FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "On the way", selectedPaymentMethod.toString(), "", 0));
     }
-    await batch.commit();
+    FirestoreServices.removeAllCartItemsFromFirestore();
+
+    setState(() {
+      _isLoading = false;
+    });
+    if(!_isLoading){
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
+    }
+
+
   }
 }
