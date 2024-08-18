@@ -37,7 +37,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
 
     if (mounted) {
       setState(() {
-        totalPrice = cartItems.fold(0, (sum, item) => sum + int.parse(item.total_price));
+        totalPrice = cartItems.fold(0, (sum, item) => sum + double.parse(item.total_price).toInt());
       });
     }
   }
@@ -156,7 +156,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               padding: const EdgeInsets.all(20.0),
               child: MaterialButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage(cartItems: cartItems, totalPrice: totalPrice,)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PaymentPage(cartItems: cartItems, totalPrice: totalPrice.toDouble(),)));
                 },
                 height: 45,
                 elevation: 0,

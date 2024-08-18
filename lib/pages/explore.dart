@@ -38,6 +38,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     100,
   ];
 
+
+
   List<Color> colors = [
     Colors.black,
     Colors.purple,
@@ -46,8 +48,8 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     const Color(0xFFFFC1D9),
   ];
 
-  // int _selectedColor = 0;
-  int _selectedSize = 1;
+   int _selectedSize = 0;
+  double selectedAmount = 1.0;
   late NetworkInfo _networkInfo;
   var selectedRange = const RangeValues(10.00, 1500.00);
   late String totalPrice, unitPrice, amount, seller_name;
@@ -239,7 +241,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                         itemCount: stramSnapShot.data!.docs.length,
                         itemBuilder: (context, index) {
                         final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
-                        return productCart(documentSnapshot);
+                        return productCart(documentSnapshot, context);
                         });
                         };
                         return const Center(child: CircularProgressIndicator(),);
@@ -314,7 +316,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               itemCount: stramSnapShot.data!.docs.length,
                               itemBuilder: (context, index) {
                                 final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
-                                return productCart(documentSnapshot);
+                                return productCart(documentSnapshot, context);
                               });
                         };
                         return const Center(child: CircularProgressIndicator(),);
@@ -340,7 +342,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     });
   }*/
 
-  productCart(DocumentSnapshot<Object?> documentSnapshot) {
+  productCart(DocumentSnapshot<Object?> documentSnapshot, BuildContext context) {
     return AspectRatio(
       aspectRatio: 1 / 1,
       child: FadeAnimation(
@@ -392,7 +394,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                             borderRadius: BorderRadius.circular(50),
                           ),
                           onPressed: () {
-                            addToCartModal(documentSnapshot);
+                            addToCartModal(documentSnapshot,context);
                           },
                           padding: const EdgeInsets.all(5),
                           child: const Center(
@@ -654,15 +656,13 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     );
   }
 
-  addToCartModal(DocumentSnapshot<Object?> documentSnapshot) async{
-
+  Future<void> addToCartModal(DocumentSnapshot<Object?> documentSnapshot, BuildContext mContext) async {
     List<FarmerModel> farmerList = [];
     int? selectedFarmerIndex;
 
     List<dynamic> productOwners = documentSnapshot['product_owner'];
     farmerList = productOwners.map((owner) => FarmerModel(owner, false)).toList();
     setState(() {});
-
 
     return showModalBottomSheet(
       context: context,
@@ -687,50 +687,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "পরিমান",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                    Container(
-                      height: 60,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: size.length,
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedSize = index;
-                              });
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 500),
-                              margin: const EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                color: _selectedSize == index
-                                    ? Colors.lightGreen[800]
-                                    : Colors.grey.shade200,
-                                shape: BoxShape.circle,
-                              ),
-                              width: 40,
-                              height: 40,
-                              child: Center(
-                                child: Text(
-                                  size[index].toString(),
-                                  style: TextStyle(
-                                    color: _selectedSize == index
-                                        ? Colors.white
-                                        : Colors.black,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                    _buildAmountSelector(setState),
                     const SizedBox(height: 10),
                     Text(
                       'ফারমার লিস্ট :',
@@ -753,7 +710,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                 selectedFarmerIndex = index;
                                 for (int i = 0; i < farmerList.length; i++) {
                                   farmerList[i].isFarmerSelected = (i == selectedFarmerIndex);
-                                }
+                                };
                               });
                             },
                           );
@@ -762,58 +719,57 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   ],
                 ),
-                button('কার্টে যোগ করুন', () async{
+                button('কার্টে যোগ করুন', () async {
+                  User? userCredential = await FirebaseAuth.instance.currentUser;
 
-                  User? userCredential = await FirebaseAuth.instance
-                      .currentUser;
-
-                  if(!await _networkInfo.isConnected){
+                  if (!await _networkInfo.isConnected) {
                     const snackbar = SnackBar(
                       content: Text("No internet available!"),
                       duration: Duration(seconds: 5),
                     );
 
-                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                    ScaffoldMessenger.of(mContext).showSnackBar(snackbar);
                     return;
                   }
 
-                  if(userCredential == null){
+                  if (userCredential == null) {
                     const snackbar = SnackBar(
                       content: Text("No user is currently logged in."),
                       duration: Duration(seconds: 5),
                     );
 
-                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                    ScaffoldMessenger.of(mContext).showSnackBar(snackbar);
                     return;
                   }
 
-                  if(selectedFarmerIndex == null){
+                  if (selectedFarmerIndex == null) {
                     const snackbar = SnackBar(
                       content: Text("First select a farmer!"),
                       duration: Duration(seconds: 5),
                     );
 
-                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                    Navigator.pop(context);
+                    ScaffoldMessenger.of(mContext).showSnackBar(snackbar);
+                    Navigator.pop(mContext); // Use context from the bottom sheet
                     return;
                   }
 
-                  totalPrice = ((documentSnapshot['product_price'] as int)*
+                  totalPrice = ((documentSnapshot['product_price'] as int) *
                       size[_selectedSize]).toString();
 
                   await FirestoreServices.addItemToCart(
-                      userCredential!.uid,
-                      DateTime.now().millisecondsSinceEpoch.toString(),
-                      documentSnapshot['product_name'],
-                      documentSnapshot['brand'],
-                      documentSnapshot['product_price'],
-                      documentSnapshot['product_img'],
-                      size[_selectedSize].toString(),
-                      totalPrice,
-                      farmerList[selectedFarmerIndex!].farmerName,
-                      context);
+                    userCredential.uid,
+                    DateTime.now().millisecondsSinceEpoch.toString(),
+                    documentSnapshot['product_name'],
+                    documentSnapshot['brand'],
+                    documentSnapshot['product_price'],
+                    documentSnapshot['product_img'],
+                    size[_selectedSize].toString(),
+                    totalPrice,
+                    farmerList[selectedFarmerIndex!].farmerName,
+                    mContext,
+                  );
 
-                  Navigator.pop(context);
+                  Navigator.pop(mContext); // Use context from the bottom sheet
 
                   //show a snackbar when an item is added to the cart
                   final snackbar = SnackBar(
@@ -825,7 +781,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   );
 
-                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                  ScaffoldMessenger.of(mContext).showSnackBar(snackbar);
                 }),
               ],
             ),
@@ -833,7 +789,45 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         },
       ),
     );
+  }
 
+
+
+
+
+  Widget _buildAmountSelector(void Function(void Function()) setState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'পরিমান',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+            ),
+            Text(
+              selectedAmount.round().toString(),
+              style: TextStyle(color: Colors.lightGreen[800], fontSize: 18),
+            ),
+          ],
+        ),
+        Slider(
+          value: selectedAmount,
+          min: 1,
+          max: 100,
+          divisions: 99,
+          activeColor: Colors.lightGreen[800],
+          inactiveColor: Colors.grey.shade300,
+          label: selectedAmount.round().toString(),
+          onChanged: (double value) {
+            setState(() {
+              selectedAmount = value;
+            });
+          },
+        ),
+      ],
+    );
   }
 
   button(String text, Function onPressed) {

@@ -19,23 +19,10 @@ class ProductViewPage extends StatefulWidget {
 }
 
 class _ProductViewPageState extends State<ProductViewPage> {
-  List<int> size = [
-    1,
-    5,
-    10,
-    15,
-    20,
-    25,
-    40,
-    50,
-    80,
-    100,
-  ];
-
-  int _selectedSize = 0;
+  double selectedAmount = 1.0;
   List<FarmerModel> farmerList = [];
   int? selectedFarmerIndex;
-  late String totalPrice, unitPrice, amount, seller_name;
+  late String totalPrice, unitPrice, seller_name;
   late NetworkInfo _networkInfo;
 
 
@@ -198,50 +185,12 @@ class _ProductViewPageState extends State<ProductViewPage> {
                             ),
                           ),
                           SizedBox(height: 10),
-                          Text(
+                         /* Text(
                             'পরিমান',
                             style: TextStyle(
                                 color: Colors.grey.shade400, fontSize: 18),
-                          ),
-                          SizedBox(
-                            height: 60,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: size.length,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedSize = index;
-                                    });
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 500),
-                                    margin: const EdgeInsets.only(right: 10),
-                                    decoration: BoxDecoration(
-                                      color: _selectedSize == index
-                                          ? Colors.lightGreen[800]
-                                          : Colors.grey.shade200,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    width: 40,
-                                    height: 40,
-                                    child: Center(
-                                      child: Text(
-                                        size[index].toString(),
-                                        style: TextStyle(
-                                          color: _selectedSize == index
-                                              ? Colors.white
-                                              : Colors.black,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                          ),*/
+                          _buildAmountSelector(),
                           SizedBox(height: 10),
                           Text(
                             'ফারমার লিস্ট :',
@@ -331,7 +280,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                         EasyLoading.show(status: "Update Cart...");
 
                         totalPrice = ((widget.documentSnapshot['product_price'] as int)*
-                            size[_selectedSize]).toString();
+                            selectedAmount.toInt()).toString();
 
                        await FirestoreServices.addItemToCart(
                             userCredential.uid,
@@ -340,7 +289,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                             widget.documentSnapshot['brand'],
                             widget.documentSnapshot['product_price'],
                             widget.documentSnapshot['product_img'],
-                            size[_selectedSize].toString(),
+                           (selectedAmount.toInt()).toString(),
                             totalPrice,
                             farmerList[selectedFarmerIndex!].farmerName,
                             context);
@@ -369,6 +318,42 @@ class _ProductViewPageState extends State<ProductViewPage> {
           ],
         ),
       ),
+    );
+  }
+
+
+  Widget _buildAmountSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'পরিমান',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+            ),
+            Text(
+              selectedAmount.round().toString(),
+              style: TextStyle(color: Colors.lightGreen[800], fontSize: 18),
+            ),
+          ],
+        ),
+        Slider(
+          value: selectedAmount,
+          min: 1,
+          max: 100,
+          divisions: 99,
+          activeColor: Colors.lightGreen[800],
+          inactiveColor: Colors.grey.shade300,
+          label: selectedAmount.round().toString(),
+          onChanged: (double value) {
+            setState(() {
+              selectedAmount = value;
+            });
+          },
+        ),
+      ],
     );
   }
 
