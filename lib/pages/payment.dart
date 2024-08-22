@@ -19,6 +19,7 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   String? selectedPaymentMethod;
   bool _isLoading = false;
+  final TextEditingController _addressController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class _PaymentPageState extends State<PaymentPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,18 +41,30 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 30),
             const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
-            buildPaymentOption(context, 'বিকাশ', Icons.account_balance),
-            buildPaymentOption(context, 'রকেট', Icons.account_balance),
-            buildPaymentOption(context, 'ক্রেডিট কার্ড', Icons.credit_card),
-            buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),
+            buildPaymentOption(context, 'এসএসএল এর মাধ্যমে পে করুন', image: const AssetImage("assets/images/ssl_logo.png")),
+            buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', icon: Icons.money),
             const SizedBox(height: 30),
+
+            // Delivery Address Field
+            const Text('ডেলিভারি ঠিকানা', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _addressController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'আপনার ডেলিভারি ঠিকানা লিখুন',
+              ),
+            ),
+            const SizedBox(height: 60),
+
+            // Payment Button
             MaterialButton(
               onPressed: () async {
                 if (selectedPaymentMethod != null) {
                   await _handlePayment(); // Call _handlePayment here
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please select a payment method')),
+                    const SnackBar(content: Text('অনুগ্রহ করে পেমেন্ট পদ্ধতি নির্বাচন করুন')),
                   );
                 }
               },
@@ -75,7 +88,8 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  Widget buildPaymentOption(BuildContext context, String title, IconData icon) {
+
+  Widget buildPaymentOption(BuildContext context, String title, {IconData? icon, ImageProvider? image}) {
     final isSelected = selectedPaymentMethod == title;
     return GestureDetector(
       onTap: () {
@@ -93,7 +107,10 @@ class _PaymentPageState extends State<PaymentPage> {
         ),
         child: Row(
           children: <Widget>[
-            Icon(icon, color: isSelected ? Colors.lightGreen[800] : Colors.grey),
+            if (image != null)
+              Image(image: image, width: 40, height: 40)  // Display image if provided
+            else if (icon != null)
+              Icon(icon, color: isSelected ? Colors.lightGreen[800] : Colors.grey),  // Display icon if provided
             const SizedBox(width: 15),
             Text(title, style: TextStyle(fontSize: 18, color: isSelected ? Colors.lightGreen[800] : Colors.black)),
           ],
@@ -107,6 +124,16 @@ class _PaymentPageState extends State<PaymentPage> {
       _isLoading = true;
     });
 
+    // Check if the address field is empty
+    if (_addressController.text.isEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('অনুগ্রহ করে আপনার ঠিকানা লিখুন')),
+      );
+      return;
+    }
     // Generate a unique order ID
     var orderId = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -114,7 +141,7 @@ class _PaymentPageState extends State<PaymentPage> {
     for (Product product in widget.cartItems) {
       FirestoreServices.saveOrders(OrderModel(
         orderId,
-        "123455666",
+        "12345678",
         FirebaseAuth.instance.currentUser!.uid,
         FirebaseAuth.instance.currentUser!.displayName!,
         product.productName,
@@ -124,25 +151,26 @@ class _PaymentPageState extends State<PaymentPage> {
         product.total_price,
         "Pending",
         selectedPaymentMethod.toString(),
-        "",
+        _addressController.text,
         0,
       ));
     }
 
-    // Call the payNow function from PaymentService
-    await PaymentService.payNow(context, widget.totalPrice + 100, orderId);
+    // Check payment method and handle accordingly
+    if (selectedPaymentMethod == 'এসএসএল এর মাধ্যমে পে করুন') {
+      // Call the payNow function from PaymentService
+      await PaymentService.payNow(context, widget.totalPrice + 100, orderId);
 
-    // Clear cart items from Firestore after confirming the order
-    FirestoreServices.removeAllCartItemsFromFirestore();
+      // Clear cart items from Firestore after confirming the order
+      FirestoreServices.removeAllCartItemsFromFirestore();
 
-    setState(() {
-      _isLoading = false;
-    });
-
-    // Navigate to the PaymentSuccess page
+      setState(() {
+        _isLoading = false;
+      });
+    }    // Navigate to the PaymentSuccess page
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const PaymentSuccess()),
+      MaterialPageRoute(builder: (context) => const OrderSuccess()),
     );
   }
 }

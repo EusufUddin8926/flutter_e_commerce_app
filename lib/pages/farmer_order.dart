@@ -150,6 +150,8 @@ class _FarmerOrderItemState extends State<FarmerOrderItem> {
             const SizedBox(height: 8.0),
             Text('Customer: ${widget.orderModel.customerName}'),
             const SizedBox(height: 8.0),
+            Text('Delivery Address: ${widget.orderModel.shippingAddress}'),
+            const SizedBox(height: 8.0),
             Text('Total Price: \$${widget.orderModel.total_price}'),
             const SizedBox(height: 8.0),
             Text('Status: ${widget.orderModel.orderStatus}'),
