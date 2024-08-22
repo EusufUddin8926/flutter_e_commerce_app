@@ -43,11 +43,10 @@ class AuthServices {
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('You are Logged in')));
-
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
-          const HomePage()), (Route<dynamic> route) => false);
+      if(context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('You are Logged in')));
+      }
 
 
     } on FirebaseAuthException catch (e) {

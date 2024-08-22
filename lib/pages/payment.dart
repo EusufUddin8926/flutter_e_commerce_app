@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_e_commerce_app/pages/payment_success.dart';
+import 'package:flutter_e_commerce_app/service/firestore_service.dart';
+import 'package:flutter_e_commerce_app/models/product.dart';
 import '../models/order_model.dart';
-import '../models/product.dart';
-import '../service/firestore_service.dart';
-import 'payment_success.dart'; // Import the PaymentSuccess page
+import '../service/payment_service.dart';
 
 class PaymentPage extends StatefulWidget {
   final List<Product> cartItems;
@@ -46,10 +46,9 @@ class _PaymentPageState extends State<PaymentPage> {
             buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),
             const SizedBox(height: 30),
             MaterialButton(
-              onPressed: () async{
+              onPressed: () async {
                 if (selectedPaymentMethod != null) {
-                 await confirmOrder(widget.cartItems);
-
+                  await _handlePayment(); // Call _handlePayment here
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Please select a payment method')),
@@ -103,26 +102,47 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-
-
-  Future<void> confirmOrder(List<Product> cartItems) async{
+  Future<void> _handlePayment() async {
     setState(() {
       _isLoading = true;
     });
 
-    for(Product product in cartItems){
-      var timeStamp  = DateTime.now().millisecondsSinceEpoch;
-      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), "12345678", FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "On the way", selectedPaymentMethod.toString(), "", 0));
+    // Generate a unique order ID
+    var orderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // Save orders to Firestore
+    for (Product product in widget.cartItems) {
+      FirestoreServices.saveOrders(OrderModel(
+        orderId,
+        "123455666",
+        FirebaseAuth.instance.currentUser!.uid,
+        FirebaseAuth.instance.currentUser!.displayName!,
+        product.productName,
+        product.sellerName,
+        product.product_amount,
+        product.product_price,
+        product.total_price,
+        "Pending",
+        selectedPaymentMethod.toString(),
+        "",
+        0,
+      ));
     }
+
+    // Call the payNow function from PaymentService
+    await PaymentService.payNow(context, widget.totalPrice + 100, orderId);
+
+    // Clear cart items from Firestore after confirming the order
     FirestoreServices.removeAllCartItemsFromFirestore();
 
     setState(() {
       _isLoading = false;
     });
-    if(!_isLoading){
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
-    }
 
-
+    // Navigate to the PaymentSuccess page
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const PaymentSuccess()),
+    );
   }
 }
