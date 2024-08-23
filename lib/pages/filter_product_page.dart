@@ -12,9 +12,8 @@ import '../service/firestore_service.dart';
 
 class FilterProductPage extends StatefulWidget {
   final RangeValues rangeValues;
-  final String address;
 
-  const FilterProductPage({super.key, required this.rangeValues, required this.address});
+  const FilterProductPage({super.key, required this.rangeValues});
 
   @override
   State<FilterProductPage> createState() => _FilterProductPageState();
@@ -34,18 +33,18 @@ class _FilterProductPageState extends State<FilterProductPage> {
   void initState() {
     super.initState();
     _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
-    loadFilterProducts(widget.address);
+    loadFilterProducts();
   }
 
-  void loadFilterProducts(String address) async {
+  void loadFilterProducts() async {
     try {
       // Fetch data from collections
       QuerySnapshot mostPopularSnapshot =
-      await FirebaseFirestore.instance.collection('Most Popular').get();
+          await FirebaseFirestore.instance.collection('Most Popular').get();
       QuerySnapshot forYourselfSnapshot =
-      await FirebaseFirestore.instance.collection('for yourself').get();
+          await FirebaseFirestore.instance.collection('for yourself').get();
       QuerySnapshot allProductSnapshot =
-      await FirebaseFirestore.instance.collection('All Product').get();
+          await FirebaseFirestore.instance.collection('All Product').get();
 
       // Combine all snapshots into a single list of documents
       List<DocumentSnapshot> allProducts = [
@@ -54,26 +53,14 @@ class _FilterProductPageState extends State<FilterProductPage> {
         ...allProductSnapshot.docs
       ];
 
-      // Filter products based on rangeValues (price range) and address
+      // Filter products based on rangeValues (price range)
       List<DocumentSnapshot> filteredProducts = allProducts.where((product) {
-        double productPrice = product['product_price'].toDouble(); // Convert price to double
-
-        // Check if price falls within the specified range
-        bool isPriceInRange = productPrice >= widget.rangeValues.start &&
+        double productPrice =
+            product['product_price'].toDouble(); // Convert price to double
+        return productPrice >= widget.rangeValues.start &&
             productPrice <= widget.rangeValues.end;
-
-        // Check if address matches, if provided
-        bool isAddressMatch = true;
-        if (address != "") {
-          List<dynamic> locations = product['locations'] ?? [];
-          isAddressMatch = locations.contains(address);
-        }
-
-        // Return true if both price is in range and address matches (if provided)
-        return isPriceInRange && isAddressMatch;
       }).toList();
 
-      // Update state with filtered products
       setState(() {
         _filteredProducts = filteredProducts;
       });
@@ -82,8 +69,6 @@ class _FilterProductPageState extends State<FilterProductPage> {
       print("Error fetching products: $e");
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {

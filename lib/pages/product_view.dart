@@ -52,14 +52,19 @@ class _ProductViewPageState extends State<ProductViewPage> {
       ..maskType = EasyLoadingMaskType.custom
       ..userInteractions = false
       ..dismissOnTap = false;
-      //..customAnimation = CustomAnimation();
   }
 
   void _initializeFarmerList() {
-    // Assuming `product_owner` is a list of farmer names
+
     List<dynamic> productOwners = widget.documentSnapshot['product_owner'];
-    farmerList =
-        productOwners.map((owner) => FarmerModel(owner, false)).toList();
+    farmerList = productOwners.map((owner) {
+      return FarmerModel(
+          owner['name'] ?? '',
+          owner['uId'] ?? '',
+          false
+      );
+    }).toList();
+
     setState(() {});
   }
 
@@ -292,6 +297,7 @@ class _ProductViewPageState extends State<ProductViewPage> {
                            (selectedAmount.toInt()).toString(),
                             totalPrice,
                             farmerList[selectedFarmerIndex!].farmerName,
+                            farmerList[selectedFarmerIndex!].farmerId,
                             context);
 
                         Navigator.pop(context);

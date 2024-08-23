@@ -4,6 +4,7 @@ class Product {
   final String productBrand;
   final String product_img;
   final String sellerName;
+  final String sellerId;
   String product_amount;
   final int product_price;
   String total_price;
@@ -14,6 +15,7 @@ class Product {
       this.productBrand,
       this.product_img,
       this.sellerName,
+      this.sellerId,
       this.product_amount,
       this.product_price,
       this.total_price
@@ -26,6 +28,7 @@ class Product {
         json["brand"] as String,
         json["product_img"] as String,
         json["sellerName"] as String,
+        json["sellerId"] as String,
         json["product_amount"] as String,
         json["price"] as int,
         json["total_price"] as String
@@ -39,6 +42,7 @@ class Product {
       "productBrand": productBrand,
       "product_img": product_img,
       "sellerName": sellerName,
+      "sellerId": sellerId,
       "product_amount": product_amount,
       "product_price": product_price,
       "total_price": total_price
@@ -47,6 +51,6 @@ class Product {
 
   @override
   String toString() {
-    return 'Product{uid: $uid, productName: $productName, productBrand: $productBrand, product_img: $product_img, sellerName: $sellerName, product_amount: $product_amount,product_price: $product_price, total_price: $total_price}';
+    return 'Product{uid: $uid, productName: $productName, productBrand: $productBrand, product_img: $product_img, sellerName: $sellerName, sellerId: $sellerId, product_amount: $product_amount, product_price: $product_price, total_price: $total_price}';
   }
 }

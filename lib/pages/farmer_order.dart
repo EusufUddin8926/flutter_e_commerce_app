@@ -14,6 +14,7 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
   String selectedStatus = 'All';
   String userFullName = "";
 
+
   @override
   void initState() {
     super.initState();
@@ -56,10 +57,10 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: userFullName.isNotEmpty
+        stream: FirebaseAuth.instance.currentUser?.uid != null
             ? FirebaseFirestore.instance
             .collection('Order')
-            .where('sellerName', isEqualTo: userFullName)
+            .where('sellerId', isEqualTo: FirebaseAuth.instance.currentUser?.uid.toString())
             .snapshots()
             : null,
         builder: (context, snapshot) {
@@ -149,6 +150,9 @@ class _FarmerOrderItemState extends State<FarmerOrderItem> {
             Text('Order ID: ${widget.orderModel.orderId}'),
             const SizedBox(height: 8.0),
             Text('Customer: ${widget.orderModel.customerName}'),
+            const SizedBox(height: 8.0),
+            widget.orderModel.shippingAddress.isNotEmpty ?
+            Text('Delivery Address: ${widget.orderModel.shippingAddress}') : const SizedBox(height: 1.0),
             const SizedBox(height: 8.0),
             Text('Total Price: \$${widget.orderModel.total_price}'),
             const SizedBox(height: 8.0),

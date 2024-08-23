@@ -10,14 +10,16 @@ class FirestoreServices {
 
 
   static saveUser(String name, email, password, dynamic uid, String address,
-      phoneNumber) async {
+      phoneNumber, String role, String profilePhotoUrl) async {
     await FirebaseFirestore.instance.collection('user').doc(uid).set({
       'uId': uid,
       'email': email,
       'password': password,
       'fullName': name,
       'address': address,
-      'phone_number': phoneNumber
+      'phone_number': phoneNumber,
+      'type': role,
+      'profilePhotoUrl': profilePhotoUrl,
     });
   }
 
@@ -31,6 +33,7 @@ class FirestoreServices {
       String productAmount,
       String totalPrice,
       String sellerName,
+      String sellerId,
       BuildContext context) async {
     await FirebaseFirestore.instance
         .collection('user')
@@ -46,6 +49,7 @@ class FirestoreServices {
       'product_amount': productAmount,
       'total_price': totalPrice,
       'sellerName': sellerName,
+      'sellerId': sellerId,
     });
   }
 
