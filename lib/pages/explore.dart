@@ -231,7 +231,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                   Text('বহুল প্রচলিত পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                                   Padding(
                                     padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                                    child: Text('সব দেখুন', style: TextStyle(color: Colors.black, fontSize: 14),),
                                   ),
                                 ],
                               )),
@@ -268,7 +268,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                   Text('আপনার জন্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                                   Padding(
                                     padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                                    child: Text('সব দেখুন', style: TextStyle(color: Colors.black, fontSize: 14),),
                                   ),
                                 ],
                               )),
@@ -306,7 +306,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                   Text('নতুন পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                                   Padding(
                                     padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                                    child: Text('সব দেখুন', style: TextStyle(color: Colors.black, fontSize: 14),),
                                   ),
                                 ],
                               ),
