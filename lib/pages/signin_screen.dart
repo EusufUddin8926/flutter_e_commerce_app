@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_e_commerce_app/pages/singup_screen.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import '../Utils/colors.dart';
 import '../service/auth_service.dart';
 
