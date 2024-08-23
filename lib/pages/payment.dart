@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_sslcommerz/model/SSLCSdkType.dart';
+import 'package:flutter_sslcommerz/model/SSLCTransactionInfoModel.dart';
+import 'package:flutter_sslcommerz/model/SSLCommerzInitialization.dart';
+import 'package:flutter_sslcommerz/model/SSLCurrencyType.dart';
+import 'package:flutter_sslcommerz/sslcommerz.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../models/order_model.dart';
 import '../models/product.dart';
 import '../service/firestore_service.dart';
@@ -42,10 +49,10 @@ class _PaymentPageState extends State<PaymentPage> {
               const SizedBox(height: 30),
               const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
               const SizedBox(height: 20),
-              buildPaymentOption(context, 'বিকাশ', Icons.account_balance),
-              buildPaymentOption(context, 'রকেট', Icons.account_balance),
-              buildPaymentOption(context, 'ক্রেডিট কার্ড', Icons.credit_card),
-              buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),
+              buildPaymentOption(context, "1",'ক্যাশ ওন ডেলিভারি', Icons.account_balance),
+              buildPaymentOption(context, "2", 'অনলাইন পেমেন্ট', Icons.money),
+             /* buildPaymentOption(context, 'ক্রেডিট কার্ড', Icons.credit_card),
+              buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),*/
               const SizedBox(height: 30),
               const Text('ঠিকানা দিন', style: TextStyle(fontSize: 18)),
               SizedBox(height: 8,),
@@ -60,10 +67,74 @@ class _PaymentPageState extends State<PaymentPage> {
               const SizedBox(height: 30),
               MaterialButton(
                 onPressed: () async{
-                  if (selectedPaymentMethod != null) {
-                   await confirmOrder(widget.cartItems);
+                  if(addressController.text.isEmpty){
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অর্ডার এর ঠিকানা দিন')));
+                    return;
+                  }
+                  if(selectedPaymentMethod != null && selectedPaymentMethod == "1"){
+                    await confirmOrder(widget.cartItems, "");
+                  }else if(selectedPaymentMethod != null && selectedPaymentMethod == "2"){
 
-                  } else {
+                    String cartItemName = widget.cartItems.map((product) => product.productName).join(', ');
+
+                    Sslcommerz sslcommerz = Sslcommerz(
+                        initializer: SSLCommerzInitialization(
+                            currency: SSLCurrencyType.BDT,
+                            product_category: cartItemName,
+                            multi_card_name: "visa,master,bkash",
+                            sdkType: SSLCSdkType.TESTBOX,
+                            store_id: "mobil5fe45035efe16",
+                            store_passwd: "mobil5fe45035efe16@ssl",
+                            total_amount: widget.totalPrice + 100,
+                            tran_id: DateTime.now().millisecondsSinceEpoch.toString()));
+
+                    try {
+                      SSLCTransactionInfoModel result = await sslcommerz.payNow();
+                      if (result is PlatformException) {
+                        debugPrint(result.status);
+                      } else {
+                        if (result.status!.toLowerCase() == "failed") {
+                          print('Transaction is Failed....');
+                          await Fluttertoast.showToast(
+                              msg: "Transaction is Failed....",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0);
+                        } else {
+                          if(result.status!.toLowerCase() == "closed"){
+                            await Fluttertoast.showToast(
+                              msg:
+                              "পেমেন্ট সফল হয়নি",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.black,
+                              textColor: Colors.white,
+                              fontSize: 16.0,
+                            );
+                          }else{
+                            await confirmOrder(widget.cartItems, result.cardType.toString() );
+                            await Fluttertoast.showToast(
+                              msg:
+                              "Transaction is ${result.status} and Amount is ${result.amount}",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.black,
+                              textColor: Colors.white,
+                              fontSize: 16.0,
+                            );
+                          }
+                        }
+                      }
+                    } catch (e) {
+                      debugPrint(e.toString());
+                    }
+
+                  }else{
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please select a payment method')),
                     );
@@ -90,12 +161,12 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  Widget buildPaymentOption(BuildContext context, String title, IconData icon) {
-    final isSelected = selectedPaymentMethod == title;
+  Widget buildPaymentOption(BuildContext context,String id, String title, IconData icon) {
+    final isSelected = selectedPaymentMethod == id;
     return GestureDetector(
       onTap: () {
         setState(() {
-          selectedPaymentMethod = title;
+          selectedPaymentMethod = id;
         });
       },
       child: Container(
@@ -119,12 +190,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
 
 
-  Future<void> confirmOrder(List<Product> cartItems) async{
-
-    if(addressController.text.isEmpty){
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অর্ডার এর ঠিকানা দিন')));
-      return;
-    }
+  Future<void> confirmOrder(List<Product> cartItems, String cardType) async{
 
     setState(() {
       _isLoading = true;
@@ -132,7 +198,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     for(Product product in cartItems){
       var timeStamp  = DateTime.now().millisecondsSinceEpoch;
-      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), product.sellerId, FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "Pending", selectedPaymentMethod.toString(), addressController.text.toString(), 0));
+      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), product.sellerId, FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "Pending", selectedPaymentMethod == 1 && cardType.isEmpty ? "ক্যাশ ওন ডেলিভারি": cardType, addressController.text.toString(), 0));
     }
     FirestoreServices.removeAllCartItemsFromFirestore();
 
