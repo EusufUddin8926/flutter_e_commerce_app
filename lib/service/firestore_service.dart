@@ -10,14 +10,15 @@ class FirestoreServices {
 
 
   static saveUser(String name, email, password, dynamic uid, String address,
-      phoneNumber) async {
+      phoneNumber, type) async {
     await FirebaseFirestore.instance.collection('user').doc(uid).set({
       'uId': uid,
       'email': email,
       'password': password,
       'fullName': name,
       'address': address,
-      'phone_number': phoneNumber
+      'phone_number': phoneNumber,
+      'type' : type
     });
   }
 

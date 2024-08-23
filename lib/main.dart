@@ -7,7 +7,7 @@ import 'package:flutter_e_commerce_app/pages/addproduct.dart';
 import 'package:flutter_e_commerce_app/pages/cart.dart';
 import 'package:flutter_e_commerce_app/pages/explore.dart';
 import 'package:flutter_e_commerce_app/pages/farmer_order.dart';
-import 'package:flutter_e_commerce_app/pages/profile.dart'; 
+import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:flutter_e_commerce_app/pages/orders.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'firebase_options.dart';
@@ -109,12 +109,16 @@ class _HomePageState extends State<HomePage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _pageController.jumpToPage(0);
       });
+    } else {
+      _selectedPage = 0; // Reset to the first page for consumer by default
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _pageController.jumpToPage(0);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -129,7 +133,7 @@ class _HomePageState extends State<HomePage> {
           _selectedPage = index;
         }),
         controller: _pageController,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         children: pages,
       ),
       bottomNavigationBar: FlashyTabBar(

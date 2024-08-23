@@ -80,12 +80,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       }
     }
 
-    if(mounted){
-      setState(() {
-        _isLoading = false;
-      });
-    }
-
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _updateProfile() async {

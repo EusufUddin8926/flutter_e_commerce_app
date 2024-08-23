@@ -41,7 +41,7 @@ class _PaymentPageState extends State<PaymentPage> {
             const SizedBox(height: 30),
             const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
-            buildPaymentOption(context, 'এসএসএল এর মাধ্যমে পে করুন', image: const AssetImage("assets/images/ssl_logo.png")),
+            buildPaymentOption(context, 'এসএসএল', image: const AssetImage("assets/images/ssl_logo.png")),
             buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', icon: Icons.money),
             const SizedBox(height: 30),
 
