@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class AddFarmerProductPage extends StatefulWidget {
   @override
@@ -206,60 +207,71 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   void removeItem(DocumentSnapshot document) async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
       return;
     }
 
     try {
-      final productId = document.id;
+      final String productId = document.id;
+      final String userUid = currentUser.uid;
 
+      // Reference to the product document
+      DocumentReference productRef =
+      FirebaseFirestore.instance.collection(document.reference.parent.id).doc(productId);
 
-
-      DocumentReference productRef = FirebaseFirestore.instance.collection(document.reference.parent.id).doc(productId);
-
+      // Fetch product data
       DocumentSnapshot productDoc = await productRef.get();
-
       if (!productDoc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product does not exist')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product does not exist')),
+        );
         return;
       }
 
       Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
-      print("Product Data: $productData");
-
-      if (productData == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data is null')));
+      if (productData == null || !productData.containsKey('product_owner')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product data is invalid')),
+        );
         return;
       }
 
-      List<dynamic> productOwners = productData['product_owner'] as List<dynamic>;
+      // List of owners (ensure proper casting)
+      List<dynamic> productOwners = List.from(productData['product_owner']);
       print("Product Owners: $productOwners");
 
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(currentUser.uid).get();
-      if (!userDoc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User profile not found')));
-        return;
-      }
-
-      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-      String userFullName = userData['fullName'] as String;
-      print("User Full Name: $userFullName");
-
-      bool isOwnerExist = productOwners.any((ownerName) => ownerName.toString().toLowerCase() == userFullName.toLowerCase());
+      // Check if the current user is an owner
+      bool isOwnerExist = productOwners.any(
+            (owner) => owner is Map<String, dynamic> && owner['uId'].toString() == userUid,
+      );
       print("Is Owner Exist: $isOwnerExist");
 
       if (isOwnerExist) {
-        productOwners.removeWhere((ownerName) => ownerName.toString().toLowerCase() == userFullName.toLowerCase());
+        // Remove current user from the product owners list
+        productOwners.removeWhere(
+              (owner) => owner is Map<String, dynamic> && owner['uId'].toString() == userUid,
+        );
 
+        // Update the product data in Firestore
         await productRef.update({'product_owner': productOwners});
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product ownership updated')));
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product ownership updated successfully')),
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You do not own this product')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You do not own this product')),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating product: $e')),
+      );
     }
   }
+
 
 
 
@@ -282,6 +294,8 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
       return;
     }
 
+
+
     Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
     String userFullName = userData['fullName'] as String;
     String userUid = currentUser.uid;
@@ -295,6 +309,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
     DocumentSnapshot productDoc = await productRef.get();
     if (!productDoc.exists) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
+      EasyLoading.dismiss();
       return;
     }
 
@@ -302,6 +317,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
     List<dynamic> productOwners = [];
     if (productData != null) {
+      EasyLoading.show(status: "Product adding...");
 
       productOwners = productData['product_owner'] as List<dynamic>;
       bool isOwnerExist = false;
@@ -312,6 +328,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         }
       }
       if (isOwnerExist) {
+        EasyLoading.dismiss();
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You have already added this product')));
         setState(() {
           selectedProductId = null;
@@ -326,6 +343,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
       }
 
       await productRef.update({'product_owner': productOwners});
+      EasyLoading.dismiss();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product updated successfully')));
       _loadProducts();
 
