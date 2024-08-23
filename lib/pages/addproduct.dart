@@ -107,19 +107,19 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Products'),
+        title: const Text('পণ্য সমূহ'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Your Products', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text('আপনার পণ্যগুলো', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             if (ownedProducts.isNotEmpty)
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: ownedProducts.length,
                 itemBuilder: (context, index) {
                   final document = ownedProducts[index];
@@ -150,14 +150,14 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
                 },
               )
             else
-              const Text('You do not own any products.'),
+              const Text('দুঃখিত এই মুহূর্তে আপনার কোন পণ্য নেই'),
 
             const SizedBox(height: 20),
-            const Text('Add New Product', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text('নতুন পণ্য যোগ করুন', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             DropdownButtonFormField<String>(
               value: selectedProductId,
-              hint: const Text('Select a product'),
+              hint: const Text('পণ্য যোগ করুন'),
               onChanged: (String? newValue) {
                 setState(() {
                   selectedProductId = newValue;
@@ -174,7 +174,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
                   child: Text('${data['product_name']} ($categoryName)'),
                 );
               }).toList(),
-              validator: (value) => value == null ? 'Please select a product' : null,
+              validator: (value) => value == null ? 'পণ্য যোগ করুন' : null,
             ),
             const SizedBox(height: 20),
             if (selectedProductData != null)
@@ -195,7 +195,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
               Center(
                 child: ElevatedButton(
                   onPressed: _submitForm,
-                  child: const Text('Add Product'),
+                  child: const Text('যোগ করুন'),
                 ),
               ),
           ],
@@ -258,11 +258,11 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         await productRef.update({'product_owner': productOwners});
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product ownership updated successfully')),
+          const SnackBar(content: Text('পণ্যটি আপডেট করা হয়েছে')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You do not own this product')),
+          const SnackBar(content: Text('আপনি এই পণ্যটির মালিক নন')),
         );
       }
     } catch (e) {
@@ -276,91 +276,91 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
 
   void _submitForm() async {
-  User? currentUser = FirebaseAuth.instance.currentUser;
-  if (currentUser == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
-    return;
-  }
-
-  if (selectedProductId == null || selectedProductData == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No product selected')));
-    return;
-  }
-
-  try {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(currentUser.uid).get();
-    if (!userDoc.exists) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User profile not found')));
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not logged in')));
       return;
     }
 
-
-
-    Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-    String userFullName = userData['fullName'] as String;
-    String userUid = currentUser.uid;
-
-
-    DocumentSnapshot selectedDoc = allProducts.firstWhere((doc) => doc.id == selectedProductId);
-    String collectionId = selectedDoc.reference.parent.id;
-
-    DocumentReference productRef = FirebaseFirestore.instance.collection(collectionId).doc(selectedProductId!);
-
-    DocumentSnapshot productDoc = await productRef.get();
-    if (!productDoc.exists) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
-      EasyLoading.dismiss();
+    if (selectedProductId == null || selectedProductData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No product selected')));
       return;
     }
 
-    Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
-
-    List<dynamic> productOwners = [];
-    if (productData != null) {
-      EasyLoading.show(status: "Product adding...");
-
-      productOwners = productData['product_owner'] as List<dynamic>;
-      bool isOwnerExist = false;
-      for (var owner  in productOwners) {
-        if (owner is Map<String, dynamic> && owner['uId'] == userUid) {
-          isOwnerExist = true;
-          break;
-        }
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(currentUser.uid).get();
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User profile not found')));
+        return;
       }
-      if (isOwnerExist) {
+
+
+
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      String userFullName = userData['fullName'] as String;
+      String userUid = currentUser.uid;
+
+
+      DocumentSnapshot selectedDoc = allProducts.firstWhere((doc) => doc.id == selectedProductId);
+      String collectionId = selectedDoc.reference.parent.id;
+
+      DocumentReference productRef = FirebaseFirestore.instance.collection(collectionId).doc(selectedProductId!);
+
+      DocumentSnapshot productDoc = await productRef.get();
+      if (!productDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
         EasyLoading.dismiss();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You have already added this product')));
+        return;
+      }
+
+      Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
+
+      List<dynamic> productOwners = [];
+      if (productData != null) {
+        EasyLoading.show(status: "পণ্য যোগ করা হচ্ছে...");
+
+        productOwners = productData['product_owner'] as List<dynamic>;
+        bool isOwnerExist = false;
+        for (var owner  in productOwners) {
+          if (owner is Map<String, dynamic> && owner['uId'] == userUid) {
+            isOwnerExist = true;
+            break;
+          }
+        }
+        if (isOwnerExist) {
+          EasyLoading.dismiss();
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You have already added this product')));
+          setState(() {
+            selectedProductId = null;
+            selectedProductData = null;
+          });
+          return;
+        } else {
+          productOwners.add({
+            'name': userFullName,
+            'uId': userUid,
+          });
+        }
+
+        await productRef.update({'product_owner': productOwners});
+        EasyLoading.dismiss();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('পণ্যটি সফলভাবে আপডেট করা হয়েছে')));
+        _loadProducts();
+
         setState(() {
           selectedProductId = null;
           selectedProductData = null;
         });
+
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
         return;
-      } else {
-        productOwners.add({
-          'name': userFullName,
-          'uId': userUid,
-        });
       }
 
-      await productRef.update({'product_owner': productOwners});
-      EasyLoading.dismiss();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product updated successfully')));
-      _loadProducts();
 
-      setState(() {
-        selectedProductId = null;
-        selectedProductData = null;
-      });
-
-    }else{
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
-      return;
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
     }
-
-
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
   }
-}
 
 }
