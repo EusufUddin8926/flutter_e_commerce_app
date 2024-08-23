@@ -57,7 +57,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 // Username and password fields
-                myTextField("Enter username", Colors.white, usernameController),
+                myTextField("Enter Email", Colors.white, usernameController),
                 myTextField("Password", Colors.black26, passwordController),
                 Align(
                   alignment: Alignment.centerRight,
@@ -79,6 +79,16 @@ class _SignInScreenState extends State<SignInScreen> {
                       // Sign in button
                       GestureDetector(
                         onTap: () {
+                          if(usernameController.text.isEmpty){
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email is Required field to login!')));
+                            return;
+                          }
+
+                          if(passwordController.text.isEmpty){
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password is Required field to login!')));
+                            return;
+                          }
+
                           AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
                         },
                         child: Container(

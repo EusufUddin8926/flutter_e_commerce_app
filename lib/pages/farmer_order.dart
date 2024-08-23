@@ -14,6 +14,7 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
   String selectedStatus = 'All';
   String userFullName = "";
 
+
   @override
   void initState() {
     super.initState();
@@ -24,14 +25,12 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection(
-          'user').doc(user.uid).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-      if (mounted) {
-        setState(() {
-          userFullName = userData['fullName'] as String;
-        });
-      }
+
+      setState(() {
+        userFullName = userData['fullName'] as String;
+      });
     }
   }
 
@@ -58,10 +57,10 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: userFullName.isNotEmpty
+        stream: FirebaseAuth.instance.currentUser?.uid != null
             ? FirebaseFirestore.instance
             .collection('Order')
-            .where('sellerName', isEqualTo: userFullName)
+            .where('sellerId', isEqualTo: FirebaseAuth.instance.currentUser?.uid.toString())
             .snapshots()
             : null,
         builder: (context, snapshot) {
@@ -152,7 +151,8 @@ class _FarmerOrderItemState extends State<FarmerOrderItem> {
             const SizedBox(height: 8.0),
             Text('Customer: ${widget.orderModel.customerName}'),
             const SizedBox(height: 8.0),
-            Text('Delivery Address: ${widget.orderModel.shippingAddress}'),
+            widget.orderModel.shippingAddress.isNotEmpty ?
+            Text('Delivery Address: ${widget.orderModel.shippingAddress}') : const SizedBox(height: 1.0),
             const SizedBox(height: 8.0),
             Text('Total Price: \$${widget.orderModel.total_price}'),
             const SizedBox(height: 8.0),
