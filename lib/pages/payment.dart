@@ -7,6 +7,8 @@ import 'package:flutter_sslcommerz/model/SSLCommerzInitialization.dart';
 import 'package:flutter_sslcommerz/model/SSLCurrencyType.dart';
 import 'package:flutter_sslcommerz/sslcommerz.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import '../helpers/network_info.dart';
 import '../models/order_model.dart';
 import '../models/product.dart';
 import '../service/firestore_service.dart';
@@ -26,6 +28,14 @@ class _PaymentPageState extends State<PaymentPage> {
   String? selectedPaymentMethod;
   bool _isLoading = false;
   TextEditingController addressController = new TextEditingController();
+  late NetworkInfo _networkInfo;
+
+
+  @override
+  void initState() {
+    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +68,7 @@ class _PaymentPageState extends State<PaymentPage> {
               SizedBox(height: 8,),
               TextField(
                 controller: addressController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'ঠিকানা',
                   hintText: 'ঠিকানা লিখুন',
@@ -72,8 +82,28 @@ class _PaymentPageState extends State<PaymentPage> {
                     return;
                   }
                   if(selectedPaymentMethod != null && selectedPaymentMethod == "1"){
+
+                    if(!await _networkInfo.isConnected){
+                      const snackbar = SnackBar(
+                        content: Text("No internet available!"),
+                        duration: Duration(seconds: 5),
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                      return;
+                    }
                     await confirmOrder(widget.cartItems, "");
                   }else if(selectedPaymentMethod != null && selectedPaymentMethod == "2"){
+
+                    if(!await _networkInfo.isConnected){
+                      const snackbar = SnackBar(
+                        content: Text("No internet available!"),
+                        duration: Duration(seconds: 5),
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                      return;
+                    }
 
                     String cartItemName = widget.cartItems.map((product) => product.productName).join(', ');
 
