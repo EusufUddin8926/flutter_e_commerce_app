@@ -157,7 +157,7 @@ class _PaymentPageState extends State<PaymentPage> {
     }
 
     // Check payment method and handle accordingly
-    if (selectedPaymentMethod == 'এসএসএল এর মাধ্যমে পে করুন') {
+    if (selectedPaymentMethod == 'এসএসএল') {
       // Call the payNow function from PaymentService
       await PaymentService.payNow(context, widget.totalPrice + 100, orderId);
 

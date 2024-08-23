@@ -24,12 +24,14 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection(
+          'user').doc(user.uid).get();
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
-      setState(() {
-        userFullName = userData['fullName'] as String;
-      });
+      if (mounted) {
+        setState(() {
+          userFullName = userData['fullName'] as String;
+        });
+      }
     }
   }
 
