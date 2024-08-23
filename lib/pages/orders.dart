@@ -247,7 +247,7 @@ class _OrderItemState extends State<OrderItem> {
         return 0.66;
       case 'Order taken':
         return 0.33;
-      default:
+      default: 'Pending';
         return 0.0;
     }
   }

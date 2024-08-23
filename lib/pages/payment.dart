@@ -65,7 +65,7 @@ class _PaymentPageState extends State<PaymentPage> {
               buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),*/
               const SizedBox(height: 30),
               const Text('ঠিকানা দিন', style: TextStyle(fontSize: 18)),
-              SizedBox(height: 8,),
+              const SizedBox(height: 8,),
               TextField(
                 controller: addressController,
                 decoration: const InputDecoration(

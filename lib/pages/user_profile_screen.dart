@@ -58,7 +58,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('user')
+          .doc(user.uid)
+          .get();
       if (doc.exists) {
         Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
         if (data != null && mounted) {
@@ -79,10 +81,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         }
       }
     }
-
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _updateProfile() async {
