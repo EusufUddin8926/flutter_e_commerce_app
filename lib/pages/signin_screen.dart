@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_e_commerce_app/pages/singup_screen.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../Utils/colors.dart';
+import '../helpers/network_info.dart';
 import '../service/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -16,6 +18,14 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  late NetworkInfo _networkInfo;
+
+
+  @override
+  void initState() {
+    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +91,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     children: [
                       // Sign in button
                       GestureDetector(
-                        onTap: () {
+                        onTap: () async{
+
+                          if(!await _networkInfo.isConnected){
+                            const snackbar = SnackBar(
+                              content: Text("No internet available!"),
+                              duration: Duration(seconds: 5),
+                            );
+
+                            ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                            return;
+                          }
+
                           if(usernameController.text.isEmpty){
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email is Required field to login!')));
                             return;
