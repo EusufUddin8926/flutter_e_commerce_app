@@ -745,7 +745,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 10),
                       Flexible(
                         child: Text(
                           "\৳ " + forYoudocumentSnapshot['product_price'].toString() + '.00',

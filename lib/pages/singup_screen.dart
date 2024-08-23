@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/pages/signin_screen.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../Utils/colors.dart';
+import '../helpers/network_info.dart';
 import '../service/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -17,9 +19,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
-
+  late NetworkInfo _networkInfo;
   String? _selectedRole; // Variable to hold the selected role
   final List<String> _roles = ['Consumer', 'Farmer']; // Dropdown options
+
+  @override
+  void initState() {
+    super.initState();
+    _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +120,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     children: [
                       // for sign in button
                       GestureDetector(
-                        onTap: () {
+                        onTap: () async{
                           if(_selectedRole == null || _selectedRole!.isEmpty){
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('First select Role!')));
                             return;
@@ -139,7 +147,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             return;
                           }
 
+                          if(!await _networkInfo.isConnected){
+                            const snackbar = SnackBar(
+                              content: Text("No internet available!"),
+                              duration: Duration(seconds: 5),
+                            );
 
+                            ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                            return;
+                          }
 
                           AuthServices.signupUser(
                               emailController.text.toString(),
