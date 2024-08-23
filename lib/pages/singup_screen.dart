@@ -21,7 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController phoneNumberController = TextEditingController();
   late NetworkInfo _networkInfo;
   String? _selectedRole; // Variable to hold the selected role
-  final List<String> _roles = ['Consumer', 'Farmer']; // Dropdown options
+  final List<String> _roles = ['consumer', 'farmer']; // Dropdown options
 
   @override
   void initState() {
