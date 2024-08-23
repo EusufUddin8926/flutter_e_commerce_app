@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/order_model.dart';
 import '../models/product.dart';
 import '../service/firestore_service.dart';
@@ -19,6 +18,7 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   String? selectedPaymentMethod;
   bool _isLoading = false;
+  TextEditingController addressController = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,48 +29,62 @@ class _PaymentPageState extends State<PaymentPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text('মোট পরিশোধ করতে হবে', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Text('৳${widget.totalPrice + 100}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 30),
-            const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 20),
-            buildPaymentOption(context, 'বিকাশ', Icons.account_balance),
-            buildPaymentOption(context, 'রকেট', Icons.account_balance),
-            buildPaymentOption(context, 'ক্রেডিট কার্ড', Icons.credit_card),
-            buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),
-            const SizedBox(height: 30),
-            MaterialButton(
-              onPressed: () async{
-                if (selectedPaymentMethod != null) {
-                 await confirmOrder(widget.cartItems);
-
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please select a payment method')),
-                  );
-                }
-              },
-              height: 45,
-              elevation: 0,
-              splashColor: Colors.lightGreen[700],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              color: Colors.lightGreen[800],
-              child: const Center(
-                child: Text(
-                  "পরিশোধ করুন",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text('মোট পরিশোধ করতে হবে', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
+              Text('৳${widget.totalPrice + 100}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 30),
+              const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 20),
+              buildPaymentOption(context, 'বিকাশ', Icons.account_balance),
+              buildPaymentOption(context, 'রকেট', Icons.account_balance),
+              buildPaymentOption(context, 'ক্রেডিট কার্ড', Icons.credit_card),
+              buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),
+              const SizedBox(height: 30),
+              const Text('ঠিকানা দিন', style: TextStyle(fontSize: 18)),
+              SizedBox(height: 8,),
+              TextField(
+                controller: addressController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'ঠিকানা',
+                  hintText: 'ঠিকানা লিখুন',
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 30),
+              MaterialButton(
+                onPressed: () async{
+                  if (selectedPaymentMethod != null) {
+                   await confirmOrder(widget.cartItems);
+
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a payment method')),
+                    );
+                  }
+                },
+                height: 45,
+                elevation: 0,
+                splashColor: Colors.lightGreen[700],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                color: Colors.lightGreen[800],
+                child: const Center(
+                  child: Text(
+                    "পরিশোধ করুন",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -106,13 +120,19 @@ class _PaymentPageState extends State<PaymentPage> {
 
 
   Future<void> confirmOrder(List<Product> cartItems) async{
+
+    if(addressController.text.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অর্ডার এর ঠিকানা দিন')));
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     for(Product product in cartItems){
       var timeStamp  = DateTime.now().millisecondsSinceEpoch;
-      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), "12345678", FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "On the way", selectedPaymentMethod.toString(), "", 0));
+      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), product.sellerId, FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "Pending", selectedPaymentMethod.toString(), addressController.text.toString(), 0));
     }
     FirestoreServices.removeAllCartItemsFromFirestore();
 

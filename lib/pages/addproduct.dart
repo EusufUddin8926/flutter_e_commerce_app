@@ -40,43 +40,67 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
   void _loadProducts() async {
     try {
+      // Fetch the products from Firestore
       QuerySnapshot mostPopularSnapshot = await FirebaseFirestore.instance.collection('Most Popular').get();
       QuerySnapshot forYourselfSnapshot = await FirebaseFirestore.instance.collection('for yourself').get();
       QuerySnapshot allProductSnapshot = await FirebaseFirestore.instance.collection('All Product').get();
 
+      // Create empty lists to store filtered and all products
       List<DocumentSnapshot> filteredOwnedProducts = [];
       List<DocumentSnapshot> allProductList = [];
 
+      // Combine all snapshots into a list
       List<QuerySnapshot> snapshots = [mostPopularSnapshot, forYourselfSnapshot, allProductSnapshot];
 
+      // Get the current user
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) return;
+
+      // Fetch the current user's document from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('user').doc(currentUser.uid).get();
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-      String userFullName = userData['fullName'] as String;
 
+      // Extract the current user's UID
+      String userUid = currentUser.uid;
+
+      // Iterate over all snapshots and filter products owned by the current user
       for (var snapshot in snapshots) {
         for (var doc in snapshot.docs) {
           final data = doc.data() as Map<String, dynamic>;
+
+          // Check if product_owner is a list of dynamic objects
           if (data['product_owner'] is List<dynamic>) {
             List<dynamic> productOwners = data['product_owner'] as List<dynamic>;
-            if (productOwners.contains(userFullName)) {
-              filteredOwnedProducts.add(doc);
+
+            // Iterate over each owner and check if the current user is one of them
+            for (var owner in productOwners) {
+              if (owner is Map<String, dynamic> && owner['uId'] == userUid) {
+                filteredOwnedProducts.add(doc);
+                break;
+              }
             }
           }
+
+          // Add the product to the complete list of products
           allProductList.add(doc);
         }
       }
+
+      // Ensure the widget is still mounted before updating the state
       if (!mounted) return;
 
+      // Update the state with the filtered and all products
       setState(() {
         ownedProducts = filteredOwnedProducts;
         allProducts = allProductList;
       });
     } catch (e) {
+      // Show an error message if there's an exception
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading products: $e')));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -260,8 +284,8 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
     Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
     String userFullName = userData['fullName'] as String;
+    String userUid = currentUser.uid;
 
-    print(userFullName);
 
     DocumentSnapshot selectedDoc = allProducts.firstWhere((doc) => doc.id == selectedProductId);
     String collectionId = selectedDoc.reference.parent.id;
@@ -281,8 +305,8 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
       productOwners = productData['product_owner'] as List<dynamic>;
       bool isOwnerExist = false;
-      for (String ownerName in productOwners) {
-        if (ownerName.toLowerCase() == userFullName.toLowerCase()) {
+      for (var owner  in productOwners) {
+        if (owner is Map<String, dynamic> && owner['uId'] == userUid) {
           isOwnerExist = true;
           break;
         }
@@ -295,7 +319,10 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         });
         return;
       } else {
-        productOwners.add(userFullName);
+        productOwners.add({
+          'name': userFullName,
+          'uId': userUid,
+        });
       }
 
       await productRef.update({'product_owner': productOwners});
@@ -313,37 +340,6 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
     }
 
 
-
-
-    /*Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
-
-    if (productData != null) {
-      Map<String, dynamic> productOwners;
-
-      if (productData['product_owner'] is Map) {
-        productOwners = Map<String, dynamic>.from(productData['product_owner'] as Map);
-      } else {
-        productOwners = {};
-      }
-
-      if (!productOwners.containsKey(currentUser.uid)) {
-        productOwners[currentUser.uid] = {'fullName': userFullName};
-        await productRef.update({'product_owner': productOwners});
-
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product updated successfully')));
-        _loadProducts();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You have already added this product')));
-      }
-
-      setState(() {
-        selectedProductId = null;
-        selectedProductData = null;
-      });
-
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product data not found')));
-    }*/
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating product: $e')));
   }

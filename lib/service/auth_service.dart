@@ -8,14 +8,14 @@ import '../main.dart';
 import 'firestore_service.dart';
 
 class AuthServices {
-  static signupUser(String email, String password, String fullName,String address,String phone_nubmer, BuildContext context) async {
+  static signupUser(String email, String password, String fullName,String address,String phone_nubmer,String role,String profilePhotoUrl, BuildContext context) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
       await FirebaseAuth.instance.currentUser!.updateDisplayName(fullName);
       await FirebaseAuth.instance.currentUser!.updateEmail(email);
-      await FirestoreServices.saveUser(fullName, email,password, userCredential.user!.uid, address,phone_nubmer );
+      await FirestoreServices.saveUser(fullName, email,password, userCredential.user!.uid, address,phone_nubmer, role,profilePhotoUrl );
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration Successful')));
       await instance<AppPreferences>().storeUserId(userCredential.user!.uid);
       await instance<AppPreferences>().saveCredentials(email, password);
