@@ -196,7 +196,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               addressController.text.toString(),
                                               phoneNumberController.text.toString(),
                                               _selectedRole!,
-                                              "https://cdn-icons-png.flaticon.com/512/21/21104.png",
+                                              "https://firebasestorage.googleapis.com/v0/b/flutter-e-commerce-app-6eba7.appspot.com/o/avatar.png?alt=media&token=85938cd5-35ef-4f25-83b5-7c1afa187bd6",
                                               context
                                           );
                                         },
