@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+
+import '../Utils/constant.dart';
 
 class AddFarmerProductPage extends StatefulWidget {
   @override
@@ -9,11 +12,15 @@ class AddFarmerProductPage extends StatefulWidget {
 }
 
 class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
+  final TextEditingController addressController = TextEditingController();
   String? selectedProductId;
   Map<String, dynamic>? selectedProductData;
   List<DocumentSnapshot> ownedProducts = [];
   List<DocumentSnapshot> allProducts = [];
   String? userFullName;
+  String _selectedAddress = "";
+  bool _isAddressFieldShow = true;
+
 
   @override
   void initState() {
@@ -155,7 +162,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
             const SizedBox(height: 20),
             const Text('Add New Product', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField2<String>(
               value: selectedProductId,
               hint: const Text('Select a product'),
               onChanged: (String? newValue) {
@@ -164,6 +171,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
                   selectedProductData = allProducts
                       .firstWhere((doc) => doc.id == selectedProductId)
                       .data() as Map<String, dynamic>?;
+                  _isAddressFieldShow = true;
                 });
               },
               items: allProducts.map<DropdownMenuItem<String>>((DocumentSnapshot document) {
@@ -176,6 +184,73 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
               }).toList(),
               validator: (value) => value == null ? 'Please select a product' : null,
             ),
+
+            _isAddressFieldShow ?
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Column(
+                children: [
+                  // Autocomplete Text Field
+                  Autocomplete<String>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      } else {
+                        return Constant.districtList.where((word) => word
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase()));
+                      }
+                    },
+                    onSelected: (selectedString) {
+                      setState(() {
+                        _selectedAddress = selectedString; // Always set the selected address
+                        addressController.clear();
+                      });
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.text = "";
+
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          hintText: "Search Address",
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  // Chips Display
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: _selectedAddress != ""
+                          ? [
+                        Chip(
+                          label: Text(_selectedAddress),
+                          onDeleted: () {
+                            setState(() {
+                              _selectedAddress = ""; // Clear the selected address
+                            });
+                          },
+                        ),
+                      ]
+                          : [],
+                    ),
+                  ),
+                ],
+              ),
+            ) : SizedBox(),
+
             const SizedBox(height: 20),
             if (selectedProductData != null)
               Column(
@@ -298,6 +373,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
     Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
     String userFullName = userData['fullName'] as String;
+    String userAddress = userData['address'] as String;
     String userUid = currentUser.uid;
 
 
@@ -316,6 +392,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
     Map<String, dynamic>? productData = productDoc.data() as Map<String, dynamic>?;
 
     List<dynamic> productOwners = [];
+    List<String> productLocation = [];
     if (productData != null) {
       EasyLoading.show(status: "Product adding...");
 
@@ -333,6 +410,8 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         setState(() {
           selectedProductId = null;
           selectedProductData = null;
+          _selectedAddress = "";
+          _isAddressFieldShow = false;
         });
         return;
       } else {
@@ -341,7 +420,18 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
           'uId': userUid,
         });
       }
+      productLocation = List<String>.from(productData['locations']);
+      if(_selectedAddress.isNotEmpty){
+        if (!productLocation.contains(_selectedAddress)) {
+          productLocation.add(_selectedAddress);
+        }
+      }else{
+        if (!productLocation.contains(userAddress)) {
+          productLocation.add(userAddress);
+        }
+      }
 
+      await productRef.update({'locations': productLocation});
       await productRef.update({'product_owner': productOwners});
       EasyLoading.dismiss();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product updated successfully')));
@@ -350,6 +440,8 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
       setState(() {
         selectedProductId = null;
         selectedProductData = null;
+        _selectedAddress = "";
+        _isAddressFieldShow = false;
       });
 
     }else{

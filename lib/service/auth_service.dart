@@ -41,18 +41,15 @@ class AuthServices {
     }
   }
 
-  static signinUser(String email, String password, BuildContext context) async {
+  static Future<bool> signinUser(String email, String password, BuildContext context) async {
     try {
       EasyLoading.show(status: "Signing In...");
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
       EasyLoading.dismiss();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('You are Logged in')));
 
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
-          const HomePage()), (Route<dynamic> route) => false);
+      return true;
 
 
     } on FirebaseAuthException catch (e) {
@@ -64,5 +61,6 @@ class AuthServices {
             .showSnackBar(const SnackBar(content: Text('Password did not match')));
       }
     }
+    return false;
   }
 }

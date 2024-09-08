@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import '../Utils/constant.dart';
+
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
 
@@ -22,6 +24,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   File? _image;
   bool _isEditing = false;
   bool _isLoading = false;
+  String _selectedAddress = "";
 
   @override
   void initState() {
@@ -74,7 +77,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             fullNameController.text = userProfile!.fullName;
             emailController.text = userProfile!.email;
             phoneNumberController.text = userProfile!.phoneNumber;
-            addressController.text = userProfile!.address;
+            addressController.text = "";
+            _selectedAddress = userProfile!.address;
           });
         }
       }
@@ -89,6 +93,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> _updateProfile() async {
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null && userProfile != null) {
       try {
@@ -101,7 +106,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           'fullName': fullNameController.text,
           'email': emailController.text,
           'phone_number': phoneNumberController.text,
-          'address': addressController.text,
+          'address': _selectedAddress,
           'profilePhotoUrl': photoUrl,
         });
 
@@ -161,7 +166,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return fullNameController.text.isNotEmpty &&
         emailController.text.isNotEmpty &&
         phoneNumberController.text.isNotEmpty &&
-        addressController.text.isNotEmpty;
+        _selectedAddress.isNotEmpty;
   }
 
   void _cancelEditing() {
@@ -173,6 +178,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         phoneNumberController.text = userProfile!.phoneNumber;
         addressController.text = userProfile!.address;
         _image = null;
+        _selectedAddress =userProfile!.address;
       }
     });
   }
@@ -199,6 +205,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ? () {
                 if (_canSaveProfile()) {
                   _updateProfile();
+                }else{
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All Field are requird!')));
+                  return;
                 }
               }
                   : () {
@@ -216,7 +225,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ],
         ),
         body: ListView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 42),
           children: [
             Center(
               child: GestureDetector(
@@ -253,7 +262,63 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               _buildTextField(fullNameController, 'Full Name'),
               _buildTextField(emailController, 'Email', inputType: TextInputType.emailAddress),
               _buildTextField(phoneNumberController, 'Phone Number', inputType: TextInputType.phone),
-              _buildTextField(addressController, 'Address'),
+             // _buildTextField(addressController, 'Address'),
+              Column(
+                children: [
+                  // Autocomplete Text Field
+                  Autocomplete<String>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      } else {
+                        return Constant.districtList.where((word) => word
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase()));
+                      }
+                    },
+                    onSelected: (selectedString) {
+                      setState(() {
+                        _selectedAddress = selectedString; // Always set the selected address
+                        addressController.clear();
+                      });
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                      controller.text = "";
+
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onEditingComplete: onEditingComplete,
+                        decoration: InputDecoration(
+                          labelText: "Search Address",
+                          border: const OutlineInputBorder(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  // Chips Display
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: _selectedAddress != ""
+                          ? [
+                        Chip(
+                          label: Text(_selectedAddress),
+                          onDeleted: () {
+                            setState(() {
+                              _selectedAddress = ""; // Clear the selected address
+                            });
+                          },
+                        ),
+                      ]
+                          : [],
+                    ),
+                  ),
+                ],
+              ),
             ] else ...[
               _buildDisplayTile('Full Name', userProfile!.fullName, Icons.person),
               _buildDisplayTile('Email', userProfile!.email, Icons.email),
