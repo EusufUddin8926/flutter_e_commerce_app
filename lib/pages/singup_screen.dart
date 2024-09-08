@@ -1,7 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_e_commerce_app/Utils/constant.dart';
 import 'package:flutter_e_commerce_app/pages/signin_screen.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
 import '../Utils/colors.dart';
 import '../helpers/network_info.dart';
 import '../service/auth_service.dart';
@@ -21,7 +22,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController phoneNumberController = TextEditingController();
   late NetworkInfo _networkInfo;
   String? _selectedRole; // Variable to hold the selected role
-  final List<String> _roles = ['Consumer', 'Farmer']; // Dropdown options
+  final List<String> _roles = ['Consumer', 'Farmer'];
+  String? dropdownValue;
+  String? selectedValue;
+  String _selectedAddress = "";
 
   @override
   void initState() {
@@ -102,15 +106,117 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
 
-                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                /*Padding(
+                  padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
+                  child: DropdownButtonFormField2<String>(
+                    isDense: true,
+                    isExpanded: true,
+                    dropdownStyleData: const DropdownStyleData(decoration: BoxDecoration(color: Colors.white)),
+                    decoration: const InputDecoration(
+                        fillColor: Colors.transparent,
+                        filled: true,
+                        contentPadding: EdgeInsets.only(right: 16, top: 16, bottom: 16),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                           )),
+                    hint: const Text('Select address'),
+                    value: dropdownValue,
+                    onChanged: (newValue) async{
+                      setState(() {
+                        dropdownValue = newValue;
+                      });
+
+                      //  print("SurveyMap:   ${contactMainController.nonReferingAnsMap}");
+                    },
+                    items: Constant.districtList.map((option) {
+                      return DropdownMenuItem<String>(
+                        value: option,
+                        child: Text(option),
+                      );
+                    }).toList(),
+
+                  ),
+                ),*/
+
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      children: [
+                        // Autocomplete Text Field
+                        Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return const Iterable<String>.empty();
+                            } else {
+                              return Constant.districtList.where((word) => word
+                                  .toLowerCase()
+                                  .contains(textEditingValue.text.toLowerCase()));
+                            }
+                          },
+                          onSelected: (selectedString) {
+                            setState(() {
+                              _selectedAddress = selectedString; // Always set the selected address
+                              addressController.clear();
+                            });
+                          },
+                          fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                            controller.text = "";
+
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              onEditingComplete: onEditingComplete,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                hintText: "Search Address",
+                                prefixIcon: Icon(Icons.search),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        // Chips Display
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 4.0,
+                            children: _selectedAddress != ""
+                                ? [
+                              Chip(
+                                label: Text(_selectedAddress),
+                                onDeleted: () {
+                                  setState(() {
+                                    _selectedAddress = ""; // Clear the selected address
+                                  });
+                                },
+                              ),
+                            ]
+                                : [],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                 // for username and password
                 myTextField("Enter Email", Colors.white, emailController),
                 myTextField("Password", Colors.black26, passwordController),
                 myTextField(
                     "Enter Full Name", Colors.white, fullNameController),
-                myTextField("Enter Address", Colors.white, addressController),
+
                 myTextField(
                     "Enter Phone Number", Colors.white, phoneNumberController),
+
+                /*myTextField("Enter Address", Colors.white, addressController),*/
+
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.03,
                 ),
@@ -138,8 +244,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Name is Required!')));
                             return;
                           }
-                          if(addressController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address is Required!')));
+                          if(_selectedAddress.isEmpty){
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address is required! Please select an address.')));
                             return;
                           }
                           if(phoneNumberController.text.isEmpty){
@@ -214,6 +320,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ]),
                         ),
                       ),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     ],
                   ),
                 ),
@@ -225,8 +332,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Container myTextField(
-      String hint, Color color, TextEditingController controller) {
+  Container myTextField(String hint, Color color, TextEditingController controller) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 24,

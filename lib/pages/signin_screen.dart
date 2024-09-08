@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../Utils/colors.dart';
 import '../helpers/network_info.dart';
+import '../main.dart';
 import '../service/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -113,7 +114,14 @@ class _SignInScreenState extends State<SignInScreen> {
                             return;
                           }
 
-                          AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
+                        var isSignIn = await  AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
+                          if(isSignIn){
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(content: Text('You are Logged in')));
+
+                            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+                            const HomePage()), (Route<dynamic> route) => false);
+                          }
                         },
                         child: Container(
                           width: MediaQuery.of(context).size.width,

@@ -45,6 +45,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   var selectedRange = const RangeValues(10.00, 1500.00);
   late String totalPrice, unitPrice, amount, seller_name;
   String filterValue = "";
+  String address = "";
 
 
   CollectionReference mostPopularRef = FirebaseFirestore.instance.collection("Most Popular");
@@ -54,10 +55,33 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
   @override
   void initState() {
     _scrollController = ScrollController();
-    _scrollController.addListener(_listenToScrollChange);
+   // _scrollController.addListener(_listenToScrollChange);
     _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
+    _getUserLocations();
 
     super.initState();
+  }
+
+
+  void _getUserLocations() async{
+
+    var user = FirebaseAuth.instance.currentUser;
+    if (user != null){
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection("user")
+          .doc(user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          address = userDoc.get('address') ?? ''; // Update state
+        });
+      } else {
+        print("User document does not exist");
+      }
+    }
+
+
   }
 
   void _listenToScrollChange() {
@@ -213,7 +237,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
           SliverList(
             delegate: SliverChildListDelegate([
 
-            filterValue.isNotEmpty ?  ShowFilterProduct(filterValue, context) :
+            filterValue.isNotEmpty ?  ShowFilterProduct(filterValue, context, address) :
 
                 Column(
                   mainAxisSize: MainAxisSize.min,
@@ -238,18 +262,25 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               const SizedBox(height: 10,),
                               Expanded(
                                   child: StreamBuilder(
-                                    stream: mostPopularRef.snapshots(),
-                                    builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
-                                      if(stramSnapShot.hasData){
+                                    stream: address.isNotEmpty ?mostPopularRef
+                                        .where('locations', arrayContains: address) // Use arrayContains instead of isEqualTo
+                                        .snapshots() : mostPopularRef.snapshots(),
+                                    builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
+                                      if (streamSnapShot.hasData) {
+                                        if (streamSnapShot.data!.docs.isEmpty) {
+                                          return Center(child: Text("No items found")); // Optional: Handle empty state
+                                        }
                                         return ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: stramSnapShot.data!.docs.length,
-                                            itemBuilder: (context, index) {
-                                              final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
-                                              return productCart(documentSnapshot, context);
-                                            });
-                                      };
-                                      return const Center(child: CircularProgressIndicator(),);
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: streamSnapShot.data!.docs.length,
+                                          itemBuilder: (context, index) {
+                                            final DocumentSnapshot documentSnapshot =
+                                            streamSnapShot.data!.docs[index];
+                                            return productCart(documentSnapshot, context);
+                                          },
+                                        );
+                                      }
+                                      return const Center(child: CircularProgressIndicator());
                                     },
                                   )
                               )
@@ -275,19 +306,35 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               const SizedBox(height: 10,),
                               Expanded(
                                   child: StreamBuilder(
-                                    stream: forYouRef.snapshots(),
-                                    builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
-                                      if(stramSnapShot.hasData){
+                                    stream:address.isNotEmpty ? forYouRef.where('locations', arrayContains: address) // Filter by address in the 'locations' array
+                                        .snapshots() : forYouRef.snapshots(),
+                                    builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
+                                      if (streamSnapShot.connectionState == ConnectionState.waiting) {
+                                        return const Center(child: CircularProgressIndicator());
+                                      }
+
+                                      if (streamSnapShot.hasError) {
+                                        return Center(child: Text("Something went wrong: ${streamSnapShot.error}"));
+                                      }
+
+                                      if (streamSnapShot.hasData) {
+                                        final documents = streamSnapShot.data!.docs;
+
+                                        if (documents.isEmpty) {
+                                          return const Center(child: Text("No items available"));
+                                        }
+
                                         return ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: stramSnapShot.data!.docs.length,
-                                            itemBuilder: (context, index) {
-                                              final DocumentSnapshot forYoudocumentSnapshot = stramSnapShot.data!.docs[index];
-                                              return forYou(forYoudocumentSnapshot);
-                                            }
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: documents.length,
+                                          itemBuilder: (context, index) {
+                                            final DocumentSnapshot forYouDocumentSnapshot = documents[index];
+                                            return forYou(forYouDocumentSnapshot);
+                                          },
                                         );
                                       }
-                                      return const Center(child: CircularProgressIndicator(),);
+
+                                      return const Center(child: CircularProgressIndicator());
                                     },
                                   )
                               )
@@ -313,20 +360,38 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                               const SizedBox(height: 10,),
                               Expanded(
                                   child: StreamBuilder(
-                                    stream: allProductRef.snapshots(),
-                                    builder: (context, AsyncSnapshot<QuerySnapshot> stramSnapShot){
-                                      if(stramSnapShot.hasData){
+                                    stream: address.isNotEmpty ? allProductRef.where('locations', arrayContains: address) // Filter by address in the 'locations' array
+                                        .snapshots() : allProductRef.snapshots(),
+                                    builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
+                                      if (streamSnapShot.connectionState == ConnectionState.waiting) {
+                                        return const Center(child: CircularProgressIndicator());
+                                      }
+
+                                      if (streamSnapShot.hasError) {
+                                        return Center(child: Text("Something went wrong: ${streamSnapShot.error}"));
+                                      }
+
+                                      if (streamSnapShot.hasData) {
+                                        final documents = streamSnapShot.data!.docs;
+
+                                        if (documents.isEmpty) {
+                                          return const Center(child: Text("No items available"));
+                                        }
+
                                         return ListView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: stramSnapShot.data!.docs.length,
-                                            itemBuilder: (context, index) {
-                                              final DocumentSnapshot documentSnapshot = stramSnapShot.data!.docs[index];
-                                              return productCart(documentSnapshot, context);
-                                            });
-                                      };
-                                      return const Center(child: CircularProgressIndicator(),);
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: documents.length,
+                                          itemBuilder: (context, index) {
+                                            final DocumentSnapshot documentSnapshot = documents[index];
+                                            return productCart(documentSnapshot, context);
+                                          },
+                                        );
+                                      }
+
+                                      return const Center(child: CircularProgressIndicator());
                                     },
                                   )
+
                               )
                             ]
                         )
@@ -352,9 +417,9 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
 
 
-  Widget ShowFilterProduct(String filterValue, BuildContext context) {
+  Widget ShowFilterProduct(String filterValue, BuildContext context, String address) {
     return FutureBuilder(
-      future: _getFilteredProducts(filterValue), // Method that returns your filtered products
+      future: _getFilteredProducts(filterValue, address), // Method that returns your filtered products
       builder: (context, AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Show a centered CircularProgressIndicator while waiting for the data
@@ -478,19 +543,22 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
-                          Text(
-                            "\৳ ${documentSnapshot['product_price'].toString()}.00",
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
+
                         ],
                       ),
+
+
+                    ),
+                    Text(
+                      "\৳ ${documentSnapshot['product_price'].toString()}.00",
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ],
                 ),
@@ -527,7 +595,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
 
 
-  Future<List<DocumentSnapshot>> _getFilteredProducts(String filterValue) async {
+  Future<List<DocumentSnapshot>> _getFilteredProducts(String filterValue, String address) async {
     // Fetch snapshots from all collections
     QuerySnapshot mostPopularSnapshot = await FirebaseFirestore.instance.collection('Most Popular').get();
     QuerySnapshot forYourselfSnapshot = await FirebaseFirestore.instance.collection('for yourself').get();
@@ -553,7 +621,14 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         // Check if any of the filter keywords are present in the combined text
         bool matchFound = filterKeywords.any((keyword) => combinedText.contains(keyword));
 
-        if (matchFound) {
+        bool locationMatches = true;
+        if (address != "") {
+          List<dynamic> locations = product['locations'] ?? [];
+          locationMatches = locations.contains(address);
+        }
+
+        // Add the document if the keyword matches and, if address is provided, the location matches
+        if (matchFound && locationMatches) {
           filteredProducts.add(doc);
         }
       }
@@ -561,6 +636,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
     return filteredProducts;
   }
+
 
 
 
@@ -839,7 +915,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => FilterProductPage(rangeValues: selectedRange),
+                          builder: (context) => FilterProductPage(rangeValues: selectedRange, address: address),
                         ),
                       );
                     })
