@@ -19,7 +19,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   List<DocumentSnapshot> allProducts = [];
   String? userFullName;
   String _selectedAddress = "";
-  bool _isAddressFieldShow = true;
+  bool _isAddressFieldShow = false;
 
 
   @override
