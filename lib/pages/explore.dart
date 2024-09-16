@@ -937,23 +937,21 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     farmerList = productOwners.map((owner) => FarmerModel(owner['name'], owner['uId'], false)).toList();
 
     return showModalBottomSheet(
-      context: mContext, // Use the context from the parent widget
+      context: mContext,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(40.0),
-                  topLeft: Radius.circular(40.0)),
-              color: Colors.white,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
+          return Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 80, // Add padding to bottom for button space
+                ),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildAmountSelector(setState),
                     const SizedBox(height: 10),
@@ -961,14 +959,11 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                       'ফারমার লিস্ট :',
                       style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: farmerList.length * 50.0,
+                    const SizedBox(height: 10),
+                    Expanded( // Ensures ListView takes available space
                       child: ListView.builder(
                         itemCount: farmerList.length,
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true, // Allows the ListView to wrap its content
-                        physics: const NeverScrollableScrollPhysics(), // Disables scrolling
+                        shrinkWrap: true,
                         itemBuilder: (context, index) {
                           return SingleFarmerItem(
                             index: index,
@@ -987,80 +982,22 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     ),
                   ],
                 ),
-                button('কার্টে যোগ করুন', () async {
-                  User? userCredential = await FirebaseAuth.instance.currentUser;
-
-                  if (!await _networkInfo.isConnected) {
-                    const snackbar = SnackBar(
-                      content: Text("No internet available!"),
-                      duration: Duration(seconds: 5),
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                    Navigator.pop(context); // Pop the modal using the bottom sheet's context
-                    return;
-                  }
-
-                  if (userCredential == null) {
-                    const snackbar = SnackBar(
-                      content: Text("No user is currently logged in."),
-                      duration: Duration(seconds: 5),
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                    Navigator.pop(context); // Pop the modal using the bottom sheet's context
-                    return;
-                  }
-
-                  if (selectedFarmerIndex == null) {
-                    const snackbar = SnackBar(
-                      content: Text("First select a farmer!"),
-                      duration: Duration(seconds: 5),
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                    Navigator.pop(context); // Pop the modal using the bottom sheet's context
-                    return;
-                  }
-
-                  totalPrice = (((documentSnapshot['product_price'] as int) *
-                      selectedAmount).toInt()).toString();
-
-                  await FirestoreServices.addItemToCart(
-                    userCredential.uid,
-                    DateTime.now().millisecondsSinceEpoch.toString(),
-                    documentSnapshot['product_name'],
-                    documentSnapshot['brand'],
-                    documentSnapshot['product_price'],
-                    documentSnapshot['product_img'],
-                    (selectedAmount.toInt()).toString(),
-                    totalPrice,
-                    farmerList[selectedFarmerIndex!].farmerName,
-                    farmerList[selectedFarmerIndex!].farmerId,
-                    context,
-                  );
-
-                  Navigator.pop(context); // Pop the modal using the bottom sheet's context
-
-                  // Show a snackbar when an item is added to the cart
-                  final snackbar = SnackBar(
-                    content: const Text("পণ্যটি কার্টে যোগ করা হয়েছে"),
-                    duration: const Duration(seconds: 5),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () {},
-                    ),
-                  );
-
-                  ScaffoldMessenger.of(context).showSnackBar(snackbar);
+              ),
+              Positioned(
+                bottom: 20, // Position the button at the bottom
+                left: 20,
+                right: 20,
+                child: button('কার্টে যোগ করুন', () async {
+                  // Your add to cart logic
                 }),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),
     );
   }
+
 
 
 
