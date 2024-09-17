@@ -37,7 +37,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
       if (userData['type'] != 'farmer') {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Access denied: Farmers only')));
+            const SnackBar(content: Text('শুধুমাত্র কৃষকের জন্য')));
         Navigator.pop(context);
       } else {
         setState(() {
@@ -127,20 +127,20 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Products'),
+        title: const Text('পণ্য সমূহ'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Your Products',
+            const Text('আপনার পণ্যগুলো',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             if (ownedProducts.isNotEmpty)
               ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: ownedProducts.length,
                 itemBuilder: (context, index) {
                   final document = ownedProducts[index];
@@ -173,14 +173,15 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
                 },
               )
             else
-              const Text('You do not own any products.'),
+              const Text('দুঃখিত এই মুহূর্তে আপনার কোন পণ্য নেই'),
+
             const SizedBox(height: 20),
-            const Text('Add New Product',
+            const Text('নতুন পণ্য যোগ করুন',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             DropdownButtonFormField2<String>(
               value: selectedProductId,
-              hint: const Text('Select a product'),
+              hint: const Text('পণ্য সিলেক্ট করুন'),
               onChanged: (String? newValue) {
                 setState(() {
                   selectedProductId = newValue;
@@ -201,7 +202,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
                 );
               }).toList(),
               validator: (value) =>
-                  value == null ? 'Please select a product' : null,
+                  value == null ? 'অনুগ্রহ করে পণ্য যোগ করুন' : null,
             ),
             _isAddressFieldShow
                 ? Padding(
@@ -298,7 +299,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
               Center(
                 child: ElevatedButton(
                   onPressed: _submitForm,
-                  child: const Text('Add Product'),
+                  child: const Text('যোগ করুন'),
                 ),
               ),
           ],
@@ -311,7 +312,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
+        const SnackBar(content: Text('ইউসার লগইন নেই')),
       );
       return;
     }
@@ -329,7 +330,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
       DocumentSnapshot productDoc = await productRef.get();
       if (!productDoc.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product does not exist')),
+          const SnackBar(content: Text('পণ্যের অতিত্ত নেই')),
         );
         return;
       }
@@ -338,7 +339,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
           productDoc.data() as Map<String, dynamic>?;
       if (productData == null || !productData.containsKey('product_owner')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product data is invalid')),
+          const SnackBar(content: Text('পণ্যটির ডাটা সঠিক নয়')),
         );
         return;
       }
@@ -367,11 +368,11 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Product ownership updated successfully')),
+              content: Text('পণ্যটি আপডেট করা হয়েছে')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You do not own this product')),
+          const SnackBar(content: Text('আপনি এই পণ্যটির মালিক নন')),
         );
       }
     } catch (e) {
@@ -385,13 +386,13 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('User not logged in')));
+          .showSnackBar(const SnackBar(content: Text('ইউসার লগইন নেই')));
       return;
     }
 
     if (selectedProductId == null || selectedProductData == null) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('No product selected')));
+          .showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে একটি পণ্য সিলেক্ট করুন')));
       return;
     }
 
@@ -402,7 +403,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
           .get();
       if (!userDoc.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User profile not found')));
+            const SnackBar(content: Text('ইউসার পাওয়া যায় নি')));
         return;
       }
 
@@ -422,7 +423,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
       DocumentSnapshot productDoc = await productRef.get();
       if (!productDoc.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Product data not found')));
+            const SnackBar(content: Text('পণ্যের ডাটা পাওয়া যায় নি')));
         EasyLoading.dismiss();
         return;
       }
@@ -433,7 +434,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
       List<dynamic> productOwners = [];
       List<String> productLocation = [];
       if (productData != null) {
-        EasyLoading.show(status: "Product adding...");
+        EasyLoading.show(status: "পণ্য যোগ করা হচ্ছে...");
 
         productOwners = productData['product_owner'] as List<dynamic>;
         bool isOwnerExist = false;
@@ -446,7 +447,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         if (isOwnerExist) {
           EasyLoading.dismiss();
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text('You have already added this product')));
+              content: Text('পণ্যটি ইতিমধ্যে যোগ করা হয়েছে')));
           setState(() {
             selectedProductId = null;
             selectedProductData = null;
@@ -483,7 +484,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         await productRef.update({'product_owner': productOwners});
         EasyLoading.dismiss();
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Product updated successfully')));
+            const SnackBar(content: Text('পণ্যটি সফলভাবে আপডেট করা হয়েছে')));
         _loadProducts();
 
         setState(() {
@@ -494,7 +495,7 @@ class _AddFarmerProductPageState extends State<AddFarmerProductPage> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Product data not found')));
+            const SnackBar(content: Text('পণ্যের ডাটা পাওয়া যায় নি')));
         return;
       }
     } catch (e) {

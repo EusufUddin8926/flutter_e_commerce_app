@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../animation/FadeAnimation.dart';
 import '../main.dart';
 
-class PaymentSuccess extends StatefulWidget {
-  const PaymentSuccess({Key? key}) : super(key: key);
+class OrderSuccess extends StatefulWidget {
+  const OrderSuccess({Key? key}) : super(key: key);
 
   @override
-  _PaymentSuccessState createState() => _PaymentSuccessState();
+  _OrderSuccessState createState() => _OrderSuccessState();
 }
 
-class _PaymentSuccessState extends State<PaymentSuccess> {
+class _OrderSuccessState extends State<OrderSuccess> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -31,9 +31,9 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
                 width: 250,
               )),
               const SizedBox(height: 50.0,),
-              FadeAnimation(1.2, const Text('পেমেন্ট সফল হয়েছে! 🥳', style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),)),
+              FadeAnimation(1.2, const Text('অর্ডার সফল হয়েছে! 🥳', style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),)),
               const SizedBox(height: 20.0,),
-              FadeAnimation(1.3, Text('আপনার পেমেন্ট \n সফলভাবে সম্পন্ন হয়েছে..', textAlign: TextAlign.center, style: TextStyle(fontSize: 16.0, color: Colors.grey.shade700),)),
+              FadeAnimation(1.3, Text('আপনার অর্ডারটি \n সফলভাবে হয়েছে..', textAlign: TextAlign.center, style: TextStyle(fontSize: 16.0, color: Colors.grey.shade700),)),
               const SizedBox(height: 140.0,),
               FadeAnimation(1.4,
                 MaterialButton(

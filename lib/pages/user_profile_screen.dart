@@ -111,7 +111,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
+          const SnackBar(content: Text('প্রোফাইল সফলভাবে আপডেট করা হয়েছে')),
         );
 
         _loadUserProfile();
@@ -121,7 +121,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       } catch (e) {
         print('Error updating profile: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update profile. Please try again.')),
+          const SnackBar(content: Text('সফলভাবে আপডেট করা যায়নি। আবার চেষ্টা করুন।')),
         );
       }
     }
@@ -188,7 +188,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     } else if (userProfile == null) {
-      return const Center(child: Text('No profile data available'));
+      return const Center(child: Text('প্রোফাইল ডাটা পাওয়া যায় নি'));
     } else {
       return Scaffold(
         appBar: AppBar(
@@ -289,9 +289,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         controller: controller,
                         focusNode: focusNode,
                         onEditingComplete: onEditingComplete,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: "Search Address",
-                          border: const OutlineInputBorder(),
+                          border: OutlineInputBorder(),
                         ),
                       );
                     },
@@ -363,8 +363,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         return _buildConsumerWidgets();
       case 'farmer':
         return _buildFarmerWidgets();
-      case 'agent':
-        return _buildAgentWidgets();
       default:
         return Container();
     }
@@ -378,9 +376,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Container();
   }
 
-  Widget _buildAgentWidgets() {
-    return Container();
-  }
 }
 
 class UserProfile {

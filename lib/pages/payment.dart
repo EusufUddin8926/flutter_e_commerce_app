@@ -12,7 +12,7 @@ import '../helpers/network_info.dart';
 import '../models/order_model.dart';
 import '../models/product.dart';
 import '../service/firestore_service.dart';
-import 'payment_success.dart'; // Import the PaymentSuccess page
+import 'order_success.dart'; // Import the PaymentSuccess page
 
 class PaymentPage extends StatefulWidget {
   final List<Product> cartItems;
@@ -236,7 +236,7 @@ class _PaymentPageState extends State<PaymentPage> {
       _isLoading = false;
     });
     if(!_isLoading){
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentSuccess()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderSuccess()));
     }
 
 

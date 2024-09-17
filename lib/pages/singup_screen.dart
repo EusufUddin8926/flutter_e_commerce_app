@@ -22,7 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController phoneNumberController = TextEditingController();
   late NetworkInfo _networkInfo;
   String? _selectedRole; // Variable to hold the selected role
-  final List<String> _roles = ['Consumer', 'Farmer'];
+  final List<String> _roles = ['consumer', 'farmer'];
   String? dropdownValue;
   String? selectedValue;
   String _selectedAddress = "";
@@ -211,7 +211,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 myTextField("Password", Colors.black26, passwordController),
                 myTextField(
                     "Enter Full Name", Colors.white, fullNameController),
-
                 myTextField(
                     "Enter Phone Number", Colors.white, phoneNumberController),
 
@@ -267,7 +266,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               emailController.text.toString(),
                               passwordController.text.toString(),
                               fullNameController.text.toString(),
-                              addressController.text.toString(),
+                              // addressController.text.toString(),
+                              _selectedAddress,
                               phoneNumberController.text.toString(),
                               _selectedRole!,
                               "https://cdn-icons-png.flaticon.com/512/21/21104.png",
