@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_e_commerce_app/pages/singup_screen.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -55,7 +53,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.002),
                 Text(
-                  "Hello Again!",
+                  "আবারো স্বাগতম!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -71,12 +69,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 // Username and password fields
-                myTextField("Enter Email", Colors.white, usernameController),
-                myTextField("Password", Colors.black26, passwordController),
+                myTextField("ইমেইল দিন", Colors.white, usernameController),
+                myTextField("পাসওয়ার্ড", Colors.black26, passwordController),
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    "Recovery Password               ",
+                    "পাসওয়ার্ড রিকোভার করুন",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -96,7 +94,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           if(!await _networkInfo.isConnected){
                             const snackbar = SnackBar(
-                              content: Text("No internet available!"),
+                              content: Text("ইন্টারনেট কানেকশন চেক করুন!"),
                               duration: Duration(seconds: 5),
                             );
 
@@ -105,19 +103,19 @@ class _SignInScreenState extends State<SignInScreen> {
                           }
 
                           if(usernameController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email is Required field to login!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে ইমেইল দিন!')));
                             return;
                           }
 
                           if(passwordController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password is Required field to login!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পাসওয়ার্ড দিন!')));
                             return;
                           }
 
                         var isSignIn = await  AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
                           if(isSignIn){
                             ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(content: Text('You are Logged in')));
+                                .showSnackBar(const SnackBar(content: Text('আপনি সফলভাবে লগইন করেছেন')));
 
                             Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
                             const HomePage()), (Route<dynamic> route) => false);
@@ -132,7 +130,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                           child: const Center(
                             child: Text(
-                              "Sign In",
+                              "সাইন ইন",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -149,7 +147,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         },
                         child: Text.rich(
                           TextSpan(
-                            text: "Not a member? ",
+                            text: "সদস্য নন? ",
                             style: TextStyle(
                               color: textColor2,
                               fontWeight: FontWeight.bold,
@@ -157,7 +155,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             ),
                             children: const [
                               TextSpan(
-                                text: "Register now",
+                                text: "রেজিস্টার করুন",
                                 style: TextStyle(
                                   color: Colors.blue,
                                   fontWeight: FontWeight.bold,

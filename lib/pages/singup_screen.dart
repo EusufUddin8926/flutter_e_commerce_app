@@ -63,7 +63,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 Text(
-                  "Registration Screen",
+                  "রেজিস্ট্রেশন পেজ",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: DropdownButtonFormField<String>(
                     value: _selectedRole,
-                    hint: const Text('Select Role'),
+                    hint: const Text('রোল সিলেক্ট করুন'),
                     items: _roles.map((type) {
                       return DropdownMenuItem(
                         value: type,
@@ -105,41 +105,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-
-                /*Padding(
-                  padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 24),
-                  child: DropdownButtonFormField2<String>(
-                    isDense: true,
-                    isExpanded: true,
-                    dropdownStyleData: const DropdownStyleData(decoration: BoxDecoration(color: Colors.white)),
-                    decoration: const InputDecoration(
-                        fillColor: Colors.transparent,
-                        filled: true,
-                        contentPadding: EdgeInsets.only(right: 16, top: 16, bottom: 16),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                           )),
-                    hint: const Text('Select address'),
-                    value: dropdownValue,
-                    onChanged: (newValue) async{
-                      setState(() {
-                        dropdownValue = newValue;
-                      });
-
-                      //  print("SurveyMap:   ${contactMainController.nonReferingAnsMap}");
-                    },
-                    items: Constant.districtList.map((option) {
-                      return DropdownMenuItem<String>(
-                        value: option,
-                        child: Text(option),
-                      );
-                    }).toList(),
-
-                  ),
-                ),*/
-
                   Padding(
                     padding: const EdgeInsets.all(24.0),
                     child: Column(
@@ -174,8 +139,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                hintText: "Search Address",
-                                prefixIcon: Icon(Icons.search),
+                                hintText: "ঠিকানা খুঁজুন",
+                                prefixIcon: const Icon(Icons.search),
                               ),
                             );
                           },
@@ -207,15 +172,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                 // for username and password
-                myTextField("Enter Email", Colors.white, emailController),
-                myTextField("Password", Colors.black26, passwordController),
+                myTextField("ইমেইল দিন", Colors.white, emailController),
+                myTextField("পাসওয়ার্ড", Colors.black26, passwordController),
                 myTextField(
-                    "Enter Full Name", Colors.white, fullNameController),
+                    "পুরো নাম দিন", Colors.white, fullNameController),
                 myTextField(
-                    "Enter Phone Number", Colors.white, phoneNumberController),
-
-                /*myTextField("Enter Address", Colors.white, addressController),*/
-
+                    "ফোন নাম্বার দিন", Colors.white, phoneNumberController),
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.03,
                 ),
@@ -227,34 +189,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       GestureDetector(
                         onTap: () async{
                           if(_selectedRole == null || _selectedRole!.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('First select Role!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('রোল সিলেক্ট করুন!')));
                             return;
                           }
 
                           if(emailController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email is Required!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ইমেইল প্রয়োজন!')));
                             return;
                           }
                           if(passwordController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password is Required!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('পাসওয়ার্ড প্রয়োজন!')));
                             return;
                           }
                           if(fullNameController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Name is Required!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('নাম প্রয়োজন!')));
                             return;
                           }
                           if(_selectedAddress.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Address is required! Please select an address.')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ঠিকানা প্রয়োজন। অনুগ্রহ করে ঠিকানা দিন!')));
                             return;
                           }
                           if(phoneNumberController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Phone number is Required!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ফোন নাম্বার প্রয়োজন!')));
                             return;
                           }
 
                           if(!await _networkInfo.isConnected){
                             const snackbar = SnackBar(
-                              content: Text("No internet available!"),
+                              content: Text("ইন্টারনেট পাওয়া যাচ্ছে না!"),
                               duration: Duration(seconds: 5),
                             );
 
@@ -266,7 +228,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               emailController.text.toString(),
                               passwordController.text.toString(),
                               fullNameController.text.toString(),
-                              // addressController.text.toString(),
                               _selectedAddress,
                               phoneNumberController.text.toString(),
                               _selectedRole!,
@@ -282,7 +243,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                           child: const Center(
                             child: Text(
-                              "Registration",
+                              "রেজিস্ট্রেশন",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -303,7 +264,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         },
                         child: Text.rich(
                           TextSpan(
-                              text: "Already have account? ",
+                              text: "আগের একাউন্ট আছে? ",
                               style: TextStyle(
                                 color: textColor2,
                                 fontWeight: FontWeight.bold,
@@ -311,7 +272,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               children: const [
                                 TextSpan(
-                                  text: "login",
+                                  text: "লগইন করুন",
                                   style: TextStyle(
                                     color: Colors.blue,
                                     fontWeight: FontWeight.bold,
