@@ -255,7 +255,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                   Text('বহুল প্রচলিত পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                                   Padding(
                                     padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                                    child: Text('সব দেখুন', style: TextStyle(color: Colors.black, fontSize: 14),),
                                   ),
                                 ],
                               )),
@@ -268,7 +268,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                     builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
                                       if (streamSnapShot.hasData) {
                                         if (streamSnapShot.data!.docs.isEmpty) {
-                                          return Center(child: Text("No items found")); // Optional: Handle empty state
+                                          return Center(child: Text("কোন পণ্য পাওয়া যায় নি")); // Optional: Handle empty state
                                         }
                                         return ListView.builder(
                                           scrollDirection: Axis.horizontal,
@@ -299,7 +299,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                   Text('আপনার জন্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                                   Padding(
                                     padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                                    child: Text('সব দেখুন', style: TextStyle(color: Colors.black, fontSize: 14),),
                                   ),
                                 ],
                               )),
@@ -321,7 +321,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                         final documents = streamSnapShot.data!.docs;
 
                                         if (documents.isEmpty) {
-                                          return const Center(child: Text("No items available"));
+                                          return const Center(child: Text("কোন পণ্য পাওয়া যায় নি"));
                                         }
 
                                         return ListView.builder(
@@ -353,7 +353,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                   Text('নতুন পণ্য', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                                   Padding(
                                     padding: EdgeInsets.only(right: 20.0),
-                                    child: Text('সব দেখুন  ', style: TextStyle(color: Colors.black, fontSize: 14),),
+                                    child: Text('সব দেখুন', style: TextStyle(color: Colors.black, fontSize: 14),),
                                   ),
                                 ],
                               ),
@@ -375,7 +375,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                         final documents = streamSnapShot.data!.docs;
 
                                         if (documents.isEmpty) {
-                                          return const Center(child: Text("No items available"));
+                                          return const Center(child: Text("কোন পণ্য পাওয়া যায় নি"));
                                         }
 
                                         return ListView.builder(
@@ -405,17 +405,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     );
   }
 
-  /*Future<void> products() async {
-    final String response = await rootBundle.loadString('assets/products.json');
-    final data = await json.decode(response);
-
-    setState(() {
-      productList = data['products']
-        .map((data) => Product.fromJson(data)).toList();
-    });
-  }*/
-
-
 
   Widget ShowFilterProduct(String filterValue, BuildContext context, String address) {
     return FutureBuilder(
@@ -439,7 +428,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
             padding: EdgeInsets.only(top: 52.0),
             child: Center(
               child: Text(
-                'No products found',
+                'কোন পণ্য পাওয়া যায় নি',
                 textAlign: TextAlign.center,
               ),
             ),
@@ -451,7 +440,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         return AlignedGridView.count(
           crossAxisCount: 2,
           shrinkWrap: true, // Avoid expanding beyond its content
-          physics: const NeverScrollableScrollPhysics(), // Let the Sliver handle the scrolling
+          physics: const NeverScrollableScrollPhysics(), // Let the Slider handle the scrolling
           itemCount: filteredProducts.length,
           itemBuilder: (context, index) {
             return FilterproductCart(filteredProducts[index], context);
@@ -546,8 +535,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
                         ],
                       ),
-
-
                     ),
                     Text(
                       "\৳ ${documentSnapshot['product_price'].toString()}.00",
@@ -633,7 +620,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
         }
       }
     }
-
     return filteredProducts;
   }
 
@@ -885,7 +871,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Price Range', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
+                        const Text('প্রাইস রেঞ্জ', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -910,7 +896,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                         }
                     ),
                     const SizedBox(height: 20,),
-                    button('Filter', () {
+                    button('ফিল্টার করুন', () {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
