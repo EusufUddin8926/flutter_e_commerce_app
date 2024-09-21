@@ -265,7 +265,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                                     builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapShot) {
                                       if (streamSnapShot.hasData) {
                                         if (streamSnapShot.data!.docs.isEmpty) {
-                                          return Center(child: Text("কোন পণ্য পাওয়া যায় নি")); // Optional: Handle empty state
+                                          return const Center(child: Text("কোন পণ্য পাওয়া যায় নি")); // Optional: Handle empty state
                                         }
                                         return ListView.builder(
                                           scrollDirection: Axis.horizontal,
@@ -483,7 +483,7 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Container(
                       height: 80,
                       width: MediaQuery.sizeOf(context).width,
