@@ -154,7 +154,7 @@ class _FarmerOrderItemState extends State<FarmerOrderItem> {
             widget.orderModel.shippingAddress.isNotEmpty ?
             Text('Delivery Address: ${widget.orderModel.shippingAddress}') : const SizedBox(height: 1.0),
             const SizedBox(height: 8.0),
-            Text('Total Price: \$${widget.orderModel.total_price}'),
+            Text('Total Price: \৳${widget.orderModel.total_price}'),
             const SizedBox(height: 8.0),
             Text('Status: ${widget.orderModel.orderStatus}'),
             const SizedBox(height: 8.0),
