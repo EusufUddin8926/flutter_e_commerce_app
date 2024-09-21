@@ -74,7 +74,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    "পাসওয়ার্ড রিকোভার করুন",
+                    "পাসওয়ার্ড রিকোভার করুন                ",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
