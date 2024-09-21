@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/models/order_model.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -164,7 +163,7 @@ class _OrderItemState extends State<OrderItem> {
                 ),
                 const SizedBox(width: 16.0),
                 Text(
-                  'Total Price: \$${widget.orderModel.total_price}',
+                  'Total Price: \৳${widget.orderModel.total_price}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
