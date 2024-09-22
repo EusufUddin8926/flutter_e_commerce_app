@@ -58,7 +58,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.002),
                 Text(
-                  "আবারো স্বাগতম!",
+                  "স্বাগতম!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,

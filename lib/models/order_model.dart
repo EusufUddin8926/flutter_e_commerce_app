@@ -12,7 +12,7 @@ class OrderModel {
   final String phoneNumber;
   final String productName;
   final String sellerName;
-  String product_amount;
+  final String product_amount;
   final int product_price;
   String total_price;
   String orderStatus;
