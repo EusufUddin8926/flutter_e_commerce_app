@@ -9,6 +9,7 @@ class OrderModel {
   final String sellerId;
   final String customerId;
   final String customerName;
+  final String phoneNumber;
   final String productName;
   final String sellerName;
   String product_amount;
@@ -24,6 +25,7 @@ class OrderModel {
       this.sellerId,
       this.customerId,
       this.customerName,
+      this.phoneNumber,
       this.productName,
       this.sellerName,
       this.product_amount,
@@ -41,6 +43,7 @@ class OrderModel {
         json["sellerId"] as String,
         json["customerId"] as String,
         json["customerName"] as String,
+        json["phoneNumber"] as String,
         json["productName"] as String,
         json["sellerName"] as String,
         json["product_amount"] as String,
@@ -59,6 +62,7 @@ class OrderModel {
       "sellerId": productName,
       "customerId": customerId,
       "customerName": customerName,
+      "phoneNumber": phoneNumber,
       "productName": productName,
       "sellerName": sellerName,
       "product_amount": product_amount,
@@ -73,6 +77,6 @@ class OrderModel {
 
   @override
   String toString() {
-    return 'OrderModel{orderId: $orderId, sellerId: $sellerId, customerId: $customerId, customerName: $customerName, productName: $productName, sellerName: $sellerName, product_amount: $product_amount, product_price: $product_price, total_price: $total_price, orderStatus: $orderStatus, paymentType: $paymentType, shippingAddress: $shippingAddress, orderRating: $orderRating}';
+    return 'OrderModel{orderId: $orderId, sellerId: $sellerId, customerId: $customerId, customerName: $customerName, phoneNumber: $phoneNumber, productName: $productName, sellerName: $sellerName, product_amount: $product_amount, product_price: $product_price, total_price: $total_price, orderStatus: $orderStatus, paymentType: $paymentType, shippingAddress: $shippingAddress, orderRating: $orderRating}';
   }
 }

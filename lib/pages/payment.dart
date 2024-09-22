@@ -41,7 +41,7 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('পেমেন্ট', style: TextStyle(color: Colors.black)),
+        title: const Text('চেকআউট', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -65,7 +65,7 @@ class _PaymentPageState extends State<PaymentPage> {
               buildPaymentOption(context, 'ক্যাশ অন ডেলিভারি', Icons.money),*/
               const SizedBox(height: 30),
               const Text('ঠিকানা দিন', style: TextStyle(fontSize: 18)),
-              SizedBox(height: 8,),
+              const SizedBox(height: 8,),
               TextField(
                 controller: addressController,
                 decoration: const InputDecoration(
@@ -228,7 +228,7 @@ class _PaymentPageState extends State<PaymentPage> {
 
     for(Product product in cartItems){
       var timeStamp  = DateTime.now().millisecondsSinceEpoch;
-      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), product.sellerId, FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!, product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "Pending", selectedPaymentMethod == 1 && cardType.isEmpty ? "ক্যাশ ওন ডেলিভারি": cardType, addressController.text.toString(), 0));
+      FirestoreServices.saveOrders(OrderModel(timeStamp.toString(), product.sellerId, FirebaseAuth.instance.currentUser!.uid,FirebaseAuth.instance.currentUser!.displayName!,FirebaseAuth.instance.currentUser!.phoneNumber!,product.productName, product.sellerName, product.product_amount, product.product_price, product.total_price, "Pending", selectedPaymentMethod == 1 && cardType.isEmpty ? "ক্যাশ ওন ডেলিভারি": cardType, addressController.text.toString(), 0));
     }
     FirestoreServices.removeAllCartItemsFromFirestore();
 

@@ -118,7 +118,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text('শিপিং চার্জ', style: TextStyle(fontSize: 18)),
+                  Text('শিপিং চার্জ + প্লাটফর্ম ফি', style: TextStyle(fontSize: 18)),
                   Text('\৳100', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -187,7 +187,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
           Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey),
           SizedBox(height: 20),
           Text(
-            'Your cart is empty',
+            'আপনার কার্টে কিছু নেই',
             style: TextStyle(fontSize: 24, color: Colors.grey),
           ),
         ],

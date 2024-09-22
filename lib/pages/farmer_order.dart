@@ -11,7 +11,7 @@ class FarmerOrdersPage extends StatefulWidget {
 }
 
 class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
-  String selectedStatus = 'All';
+  String selectedStatus = 'সব';
   String userFullName = "";
 
 
@@ -47,7 +47,7 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
               selectedStatus = newValue!;
             });
           },
-          items: <String>['All', 'Pending', 'Order Taken', 'On the way', 'Delivered']
+          items: <String>['সব', 'পেন্ডিং', 'অর্ডার নেয়া হয়েছে', 'অন দা ওয়ে', 'ডেলিভারি সম্পন্ন']
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -73,14 +73,14 @@ class _FarmerOrdersPageState extends State<FarmerOrdersPage> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No orders found.'));
+            return const Center(child: Text('অর্ডার পাওয়া যায় নি'));
           }
 
           List<OrderModel> orders = snapshot.data!.docs.map((doc) {
             return OrderModel.fromJson(doc.data() as Map<String, dynamic>);
           }).toList();
 
-          List<OrderModel> filteredOrders = selectedStatus == 'All'
+          List<OrderModel> filteredOrders = selectedStatus == 'সব'
               ? orders
               : orders.where((order) => order.orderStatus == selectedStatus).toList();
 
@@ -120,11 +120,11 @@ class _FarmerOrderItemState extends State<FarmerOrderItem> {
           .update({'orderStatus': newStatus});
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order status updated')),
+        const SnackBar(content: Text('অর্ডার স্ট্যাটাস আপডেট করা হয়েছে')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update status: $e')),
+        SnackBar(content: Text('স্ট্যাটাস আপডেট করা যায় নি: $e')),
       );
     } finally {
       setState(() {
@@ -147,37 +147,41 @@ class _FarmerOrderItemState extends State<FarmerOrderItem> {
               style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            Text('Order ID: ${widget.orderModel.orderId}'),
+            Text('অর্ডার আইডি: ${widget.orderModel.orderId}'),
             const SizedBox(height: 8.0),
-            Text('Customer: ${widget.orderModel.customerName}'),
+            Text('কাস্টমার: ${widget.orderModel.customerName}'),
+            const SizedBox(height: 8.0),
+            Text('ফোন নাম্বার: ${widget.orderModel.phoneNumber}'),
             const SizedBox(height: 8.0),
             widget.orderModel.shippingAddress.isNotEmpty ?
-            Text('Delivery Address: ${widget.orderModel.shippingAddress}') : const SizedBox(height: 1.0),
+            Text('ডেলিভারি ঠিকানা: ${widget.orderModel.shippingAddress}') : const SizedBox(height: 1.0),
             const SizedBox(height: 8.0),
-            Text('Total Price: \৳${widget.orderModel.total_price}'),
+            Text('পরিমান: ${widget.orderModel.product_amount}'),
             const SizedBox(height: 8.0),
-            Text('Status: ${widget.orderModel.orderStatus}'),
+            Text('মোট দাম: \৳${widget.orderModel.total_price}'),
             const SizedBox(height: 8.0),
-            if (widget.orderModel.orderStatus == 'Pending')
+            Text('স্ট্যাটাস: ${widget.orderModel.orderStatus}'),
+            const SizedBox(height: 8.0),
+            if (widget.orderModel.orderStatus == 'পেন্ডিং')
               ElevatedButton(
-                onPressed: _isLoading ? null : () => _updateOrderStatus('Order Taken'),
+                onPressed: _isLoading ? null : () => _updateOrderStatus('অর্ডার নেয়া হয়েছে'),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Confirm Order'),
+                    : const Text('কনফার্ম অর্ডার'),
               ),
-            if (widget.orderModel.orderStatus == 'Order Taken')
+            if (widget.orderModel.orderStatus == 'অর্ডার নেয়া হয়েছে')
               ElevatedButton(
-                onPressed: _isLoading ? null : () => _updateOrderStatus('On the way'),
+                onPressed: _isLoading ? null : () => _updateOrderStatus('অন দা ওয়ে'),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Dispatch Order'),
+                    : const Text('অর্ডার ছেড়ে দিন'),
               ),
-            if (widget.orderModel.orderStatus == 'On the way')
+            if (widget.orderModel.orderStatus == 'অন দা ওয়ে')
               ElevatedButton(
-                onPressed: _isLoading ? null : () => _updateOrderStatus('Delivered'),
+                onPressed: _isLoading ? null : () => _updateOrderStatus('ডেলিভারি সম্পন্ন'),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Mark as Delivered'),
+                    : const Text('ডেলিভারি সম্পন্ন'),
               ),
           ],
         ),

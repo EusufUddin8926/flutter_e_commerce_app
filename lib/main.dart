@@ -7,7 +7,7 @@ import 'package:flutter_e_commerce_app/pages/addproduct.dart';
 import 'package:flutter_e_commerce_app/pages/cart.dart';
 import 'package:flutter_e_commerce_app/pages/explore.dart';
 import 'package:flutter_e_commerce_app/pages/farmer_order.dart';
-import 'package:flutter_e_commerce_app/pages/profile.dart'; 
+import 'package:flutter_e_commerce_app/pages/profile.dart';
 import 'package:flutter_e_commerce_app/pages/orders.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'firebase_options.dart';
@@ -41,6 +41,12 @@ class _HomePageState extends State<HomePage> {
   int _selectedPage = 0;
   String? _userType;
   bool _isLoading = true;
+  bool _isLoggedIn = false;
+
+  List<Widget> loggedOutPages = [
+    const ExplorePage(),
+    const ProfilePage(),
+  ];
 
   List<Widget> consumerPages = [
     const ExplorePage(),
@@ -65,63 +71,69 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _pageController = PageController(initialPage: 0);
-    _fetchUserType();
+    _checkLoginStatus();
+    // Listen for auth state changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      _checkLoginStatus();
+    });
     super.initState();
   }
 
-  Future<void> _fetchUserType() async {
+  Future<void> _checkLoginStatus() async {
     setState(() {
       _isLoading = true;
     });
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      try {
-        print("Fetching user type for UID: ${user.uid}");
-        final docRef = FirebaseFirestore.instance.collection('user').doc(user.uid);
-        final doc = await docRef.get();
-
-        if (doc.exists) {
-          _userType = doc.data()?['type'] as String?;
-          print("User type found: $_userType");
-        } else {
-          print("User document not found for UID: ${user.uid}");
-          _userType = 'consumer'; // Default type if document does not exist
-        }
-      } catch (e) {
-        print("Error fetching user type: $e");
-        _userType = 'consumer'; // Default type in case of error
-      }
+      _isLoggedIn = true;
+      await _fetchUserType(user);
     } else {
-      print("No user is currently signed in");
-      _userType = 'consumer'; // Default type if no user is signed in
+      _isLoggedIn = false;
+      _userType = null;
     }
 
     setState(() {
       _isLoading = false;
-      _updatePagesBasedOnUserType(); // Ensure UI updates with the correct pages
+      _updatePagesBasedOnUserStatus();
     });
   }
 
-  void _updatePagesBasedOnUserType() {
-    if (_userType == 'farmer') {
-      _selectedPage = 0; // Reset to the first page
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _pageController.jumpToPage(0);
-      });
+  Future<void> _fetchUserType(User user) async {
+    try {
+      print("Fetching user type for UID: ${user.uid}");
+      final docRef = FirebaseFirestore.instance.collection('user').doc(user.uid);
+      final doc = await docRef.get();
+
+      if (doc.exists) {
+        _userType = doc.data()?['type'] as String?;
+        print("User type found: $_userType");
+      } else {
+        print("User document not found for UID: ${user.uid}");
+        _userType = 'consumer'; // Default type if document does not exist
+      }
+    } catch (e) {
+      print("Error fetching user type: $e");
+      _userType = 'consumer'; // Default type in case of error
     }
+  }
+
+  void _updatePagesBasedOnUserStatus() {
+    _selectedPage = 0; // Always reset to the first page when status changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pageController.jumpToPage(_selectedPage);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    final pages = _userType == 'farmer' ? farmerPages : consumerPages;
+    final pages = !_isLoggedIn ? loggedOutPages : (_userType == 'farmer' ? farmerPages : consumerPages);
 
     return Scaffold(
       body: PageView(
@@ -136,40 +148,57 @@ class _HomePageState extends State<HomePage> {
         selectedIndex: _selectedPage,
         showElevation: false,
         onItemSelected: (index) => _onItemTapped(index),
-        items: _userType == 'farmer'
-            ? [
-          FlashyTabBarItem(
-            icon: const Icon(Icons.home_outlined, size: 23),
-            title: const Text('হোম'),
-          ),
-          FlashyTabBarItem(
-            icon: const Icon(Icons.local_grocery_store_outlined, size: 23),
-            title: const Text('অর্ডার গুলো'),
-          ),
-          FlashyTabBarItem(
-            icon: const Icon(Icons.account_circle_outlined, size: 23),
-            title: const Text('প্রোফাইল'),
-          ),
-        ]
-            : [
-          FlashyTabBarItem(
-            icon: const Icon(Icons.home_outlined, size: 23),
-            title: const Text('হোম'),
-          ),
-          FlashyTabBarItem(
-            icon: const Icon(Icons.local_grocery_store_outlined, size: 23),
-            title: const Text('অর্ডার গুলো'),
-          ),
-          FlashyTabBarItem(
-            icon: const Icon(Icons.shopping_bag_outlined, size: 23),
-            title: const Text('কার্ট'),
-          ),
-          FlashyTabBarItem(
-            icon: const Icon(Icons.account_circle_outlined, size: 23),
-            title: const Text('প্রোফাইল'),
-          ),
-        ],
+        items: _getTabBarItems(),
       ),
     );
+  }
+
+  List<FlashyTabBarItem> _getTabBarItems() {
+    if (!_isLoggedIn) {
+      return [
+        FlashyTabBarItem(
+          icon: const Icon(Icons.home_outlined, size: 23),
+          title: const Text('হোম'),
+        ),
+        FlashyTabBarItem(
+          icon: const Icon(Icons.account_circle_outlined, size: 23),
+          title: const Text('প্রোফাইল'),
+        ),
+      ];
+    } else if (_userType == 'farmer') {
+      return [
+        FlashyTabBarItem(
+          icon: const Icon(Icons.home_outlined, size: 23),
+          title: const Text('হোম'),
+        ),
+        FlashyTabBarItem(
+          icon: const Icon(Icons.local_grocery_store_outlined, size: 23),
+          title: const Text('অর্ডার গুলো'),
+        ),
+        FlashyTabBarItem(
+          icon: const Icon(Icons.account_circle_outlined, size: 23),
+          title: const Text('প্রোফাইল'),
+        ),
+      ];
+    } else {
+      return [
+        FlashyTabBarItem(
+          icon: const Icon(Icons.home_outlined, size: 23),
+          title: const Text('হোম'),
+        ),
+        FlashyTabBarItem(
+          icon: const Icon(Icons.local_grocery_store_outlined, size: 23),
+          title: const Text('অর্ডার গুলো'),
+        ),
+        FlashyTabBarItem(
+          icon: const Icon(Icons.shopping_bag_outlined, size: 23),
+          title: const Text('কার্ট'),
+        ),
+        FlashyTabBarItem(
+          icon: const Icon(Icons.account_circle_outlined, size: 23),
+          title: const Text('প্রোফাইল'),
+        ),
+      ];
+    }
   }
 }

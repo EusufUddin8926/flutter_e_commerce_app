@@ -12,7 +12,7 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
-  String selectedStatus = 'All';
+  String selectedStatus = 'সব';
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class _OrdersPageState extends State<OrdersPage> {
               selectedStatus = newValue!;
             });
           },
-          items: <String>['All', 'On the way', 'Delivered', 'Order taken']
+          items: <String>['সব', 'পেন্ডিং', 'অর্ডার নেয়া হয়েছে', 'অন দা ওয়ে', 'ডেলিভারি সম্পন্ন']
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -55,14 +55,14 @@ class _OrdersPageState extends State<OrdersPage> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No orders found.'));
+            return const Center(child: Text('অর্ডার পাওয়া যায় নি.'));
           }
 
           List<OrderModel> orders = snapshot.data!.docs.map((doc) {
             return OrderModel.fromJson(doc.data() as Map<String, dynamic>);
           }).toList();
 
-          List<OrderModel> filteredOrders = selectedStatus == 'All'
+          List<OrderModel> filteredOrders = selectedStatus == 'সব'
               ? orders
               : orders.where((order) => order.orderStatus == selectedStatus).toList();
 
@@ -111,7 +111,7 @@ class _OrderItemState extends State<OrderItem> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Rating submitted'),
+          content: Text('রেটিং সাবমিট করা হয়েছে'),
         ),
       );
     } catch (e) {
@@ -121,7 +121,7 @@ class _OrderItemState extends State<OrderItem> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to submit rating: $e'),
+          content: Text('রেটিং সাবমিট করা যায় নি: $e'),
         ),
       );
     }
@@ -144,7 +144,7 @@ class _OrderItemState extends State<OrderItem> {
                   style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'orderID: ${widget.orderModel.orderId}',
+                  'অর্ডার আইডি: ${widget.orderModel.orderId}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -157,13 +157,12 @@ class _OrderItemState extends State<OrderItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Owner: ${widget.orderModel.sellerName}'),
+                      Text('সরবরাহক: ${widget.orderModel.sellerName}'),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16.0),
                 Text(
-                  'Total Price: \৳${widget.orderModel.total_price}',
+                  'মোট দাম: \৳${widget.orderModel.total_price}',
                   style: const TextStyle(fontSize: 16.0),
                 ),
               ],
@@ -176,8 +175,17 @@ class _OrderItemState extends State<OrderItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Status: ${widget.orderModel.orderStatus}'),
-                      const SizedBox(height: 4.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('স্ট্যাটাস: ${widget.orderModel.orderStatus}'),
+                          Text(
+                            'পরিমাণ: ${widget.orderModel.product_amount}',
+                            style: const TextStyle(fontSize: 14.0),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16.0),
                       TweenAnimationBuilder<double>(
                         tween: Tween<double>(
                           begin: 0,
@@ -195,9 +203,9 @@ class _OrderItemState extends State<OrderItem> {
                 ),
               ],
             ),
-            if (widget.orderModel.orderStatus == 'Delivered' && !_ratingSubmitted) ...[
+            if (widget.orderModel.orderStatus == 'ডেলিভারি সম্পন্ন' && !_ratingSubmitted) ...[
               const SizedBox(height: 8.0),
-              const Text('Rate this product:'),
+              const Text('রেটিং দিন:'),
               RatingBar.builder(
                 initialRating: _rating,
                 minRating: 1,
@@ -218,7 +226,7 @@ class _OrderItemState extends State<OrderItem> {
               const SizedBox(height: 8.0),
               ElevatedButton(
                 onPressed: _submitRating,
-                child: const Text('Submit'),
+                child: const Text('সাবমিট'),
               ),
             ] else if (_ratingSubmitted) ...[
               const SizedBox(height: 8.0),
@@ -240,13 +248,13 @@ class _OrderItemState extends State<OrderItem> {
 
   double getStatusProgress(String status) {
     switch (status) {
-      case 'Delivered':
+      case 'ডেলিভারি সম্পন্ন':
         return 1.0;
-      case 'On the way':
+      case 'অন দা ওয়ে':
         return 0.66;
-      case 'Order taken':
+      case 'অর্ডার নেয়া হয়েছে':
         return 0.33;
-      default:
+      default: 'পেন্ডিং';
         return 0.0;
     }
   }

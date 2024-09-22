@@ -18,12 +18,18 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   late NetworkInfo _networkInfo;
-
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
     _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
     super.initState();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
   }
 
   @override
@@ -69,12 +75,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                 // Username and password fields
-                myTextField("ইমেইল দিন", Colors.white, usernameController),
-                myTextField("পাসওয়ার্ড", Colors.black26, passwordController),
+                myTextField("ইমেইল দিন", Colors.white, usernameController, false),
+                myTextField("পাসওয়ার্ড", Colors.black26, passwordController, true),
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    "পাসওয়ার্ড রিকোভার করুন                ",
+                    "পাসওয়ার্ড রিকোভার করুন                ",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -91,7 +97,6 @@ class _SignInScreenState extends State<SignInScreen> {
                       // Sign in button
                       GestureDetector(
                         onTap: () async{
-
                           if(!await _networkInfo.isConnected){
                             const snackbar = SnackBar(
                               content: Text("ইন্টারনেট কানেকশন চেক করুন!"),
@@ -108,11 +113,11 @@ class _SignInScreenState extends State<SignInScreen> {
                           }
 
                           if(passwordController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পাসওয়ার্ড দিন!')));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('অনুগ্রহ করে পাসওয়ার্ড দিন!')));
                             return;
                           }
 
-                        var isSignIn = await  AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
+                          var isSignIn = await  AuthServices.signinUser(usernameController.text.toString(), passwordController.text.toString(), context);
                           if(isSignIn){
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(content: Text('আপনি সফলভাবে লগইন করেছেন')));
@@ -176,7 +181,7 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Container myTextField(String hint, Color color, TextEditingController controller) {
+  Container myTextField(String hint, Color color, TextEditingController controller, bool isPassword) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 24,
@@ -184,6 +189,7 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
       child: TextField(
         controller: controller,
+        obscureText: isPassword && !_isPasswordVisible,
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -200,10 +206,15 @@ class _SignInScreenState extends State<SignInScreen> {
             color: Colors.black45,
             fontSize: 19,
           ),
-          suffixIcon: Icon(
-            Icons.visibility_off_outlined,
-            color: color,
-          ),
+          suffixIcon: isPassword
+              ? IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off_outlined,
+              color: color,
+            ),
+            onPressed: _togglePasswordVisibility,
+          )
+              : null,
         ),
       ),
     );
