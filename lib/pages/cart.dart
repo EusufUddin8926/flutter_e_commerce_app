@@ -119,7 +119,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text('শিপিং চার্জ + প্লাটফর্ম ফি', style: TextStyle(fontSize: 18)),
-                  Text('\৳100', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('\৳80 + 5', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -144,7 +144,7 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   const Text('মোট', style: TextStyle(fontSize: 18)),
-                  Text('\৳${totalPrice + 100}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('\৳${totalPrice + 85}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
