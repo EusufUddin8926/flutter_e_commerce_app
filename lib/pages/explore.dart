@@ -983,10 +983,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
 
 
 
-
-
-
-
   Widget _buildAmountSelector(void Function(void Function()) setState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

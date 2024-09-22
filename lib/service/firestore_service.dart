@@ -63,6 +63,7 @@ class FirestoreServices {
         'sellerId': order.sellerId,
         'customerId': order.customerId,
         'customerName': order.customerName,
+        'phone_number' : order.phoneNumber,
         'productName': order.productName,
         'sellerName': order.sellerName,
         'product_amount': order.product_amount,

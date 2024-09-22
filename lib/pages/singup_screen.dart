@@ -26,11 +26,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? dropdownValue;
   String? selectedValue;
   String _selectedAddress = "";
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
     _networkInfo = NetworkInfoImpl(InternetConnectionChecker());
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _isPasswordVisible = !_isPasswordVisible;
+    });
   }
 
   @override
@@ -172,12 +179,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                 // for username and password
-                myTextField("ইমেইল দিন", Colors.white, emailController),
-                myTextField("পাসওয়ার্ড", Colors.black26, passwordController),
+                myTextField("ইমেইল দিন", Colors.white, emailController, false),
+                myTextField("পাসওয়ার্ড", Colors.black26, passwordController, true),
                 myTextField(
-                    "পুরো নাম দিন", Colors.white, fullNameController),
+                    "পুরো নাম দিন", Colors.white, fullNameController, false),
                 myTextField(
-                    "ফোন নাম্বার দিন", Colors.white, phoneNumberController),
+                    "ফোন নাম্বার দিন", Colors.white, phoneNumberController, false),
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.03,
                 ),
@@ -293,7 +300,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Container myTextField(String hint, Color color, TextEditingController controller) {
+  Container myTextField(String hint, Color color, TextEditingController controller, bool isPassword) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 24,
@@ -301,26 +308,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
       child: TextField(
         controller: controller,
+        obscureText: isPassword && !_isPasswordVisible,
         decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 18,
-            ),
-            fillColor: Colors.white,
-            filled: true,
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            hintText: hint,
-            hintStyle: const TextStyle(
-              color: Colors.black45,
-              fontSize: 19,
-            ),
-            suffixIcon: Icon(
-              Icons.visibility_off_outlined,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          fillColor: Colors.white,
+          filled: true,
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          hintText: hint,
+          hintStyle: const TextStyle(
+            color: Colors.black45,
+            fontSize: 19,
+          ),
+          suffixIcon: isPassword
+              ? IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off_outlined,
               color: color,
-            )),
+            ),
+            onPressed: _togglePasswordVisibility,
+          )
+              : null,
+        ),
       ),
     );
   }
