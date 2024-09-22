@@ -192,7 +192,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Profile Page'),
+          title: const Text('প্রোফাইল পেজ'),
           actions: [
             if (_isEditing)
               IconButton(
@@ -259,10 +259,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
             const SizedBox(height: 16),
             if (_isEditing) ...[
-              _buildTextField(fullNameController, 'Full Name'),
-              _buildTextField(emailController, 'Email', inputType: TextInputType.emailAddress),
-              _buildTextField(phoneNumberController, 'Phone Number', inputType: TextInputType.phone),
-             // _buildTextField(addressController, 'Address'),
+              _buildTextField(fullNameController, 'পুরো নাম'),
+              _buildTextField(emailController, 'ইমেইল', inputType: TextInputType.emailAddress),
+              _buildTextField(phoneNumberController, 'ফোন নাম্বার', inputType: TextInputType.phone),
               Column(
                 children: [
                   // Autocomplete Text Field
@@ -290,7 +289,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         focusNode: focusNode,
                         onEditingComplete: onEditingComplete,
                         decoration: const InputDecoration(
-                          labelText: "Search Address",
+                          labelText: "ঠিকানা খুঁজুন",
                           border: OutlineInputBorder(),
                         ),
                       );
@@ -309,7 +308,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           label: Text(_selectedAddress),
                           onDeleted: () {
                             setState(() {
-                              _selectedAddress = ""; // Clear the selected address
+                              _selectedAddress = "";
                             });
                           },
                         ),
@@ -320,11 +319,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ],
               ),
             ] else ...[
-              _buildDisplayTile('Full Name', userProfile!.fullName, Icons.person),
-              _buildDisplayTile('Email', userProfile!.email, Icons.email),
-              _buildDisplayTile('Phone Number', userProfile!.phoneNumber, Icons.phone),
-              _buildDisplayTile('Address', userProfile!.address, Icons.home),
-              _buildDisplayTile('Type', userProfile!.type, Icons.account_box_outlined),
+              _buildDisplayTile('পুরো নাম', userProfile!.fullName, Icons.person),
+              _buildDisplayTile('ইমেইল', userProfile!.email, Icons.email),
+              _buildDisplayTile('ফোন নাম্বার', userProfile!.phoneNumber, Icons.phone),
+              _buildDisplayTile('ঠিকানা', userProfile!.address, Icons.home),
+              _buildDisplayTile('টাইপ', userProfile!.type, Icons.account_box_outlined),
             ],
             const Divider(),
             _buildTypeSpecificWidgets(),

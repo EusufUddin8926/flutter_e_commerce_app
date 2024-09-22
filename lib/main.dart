@@ -72,7 +72,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     _pageController = PageController(initialPage: 0);
     _checkLoginStatus();
-    // Listen for auth state changes
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       _checkLoginStatus();
     });
@@ -80,9 +79,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _checkLoginStatus() async {
+    if(mounted){
     setState(() {
       _isLoading = true;
-    });
+    });}
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -92,11 +92,12 @@ class _HomePageState extends State<HomePage> {
       _isLoggedIn = false;
       _userType = null;
     }
-
-    setState(() {
-      _isLoading = false;
-      _updatePagesBasedOnUserStatus();
-    });
+    if(mounted) {
+      setState(() {
+        _isLoading = false;
+        _updatePagesBasedOnUserStatus();
+      });
+    }
   }
 
   Future<void> _fetchUserType(User user) async {

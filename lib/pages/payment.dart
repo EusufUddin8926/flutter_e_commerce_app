@@ -55,7 +55,7 @@ class _PaymentPageState extends State<PaymentPage> {
             children: <Widget>[
               const Text('মোট পরিশোধ করতে হবে', style: TextStyle(fontSize: 18)),
               const SizedBox(height: 10),
-              Text('৳${widget.totalPrice + 100}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text('৳${widget.totalPrice + 85}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 30),
               const Text('পেমেন্ট পদ্ধতি নির্বাচন করুন', style: TextStyle(fontSize: 18)),
               const SizedBox(height: 20),
@@ -115,7 +115,7 @@ class _PaymentPageState extends State<PaymentPage> {
                             sdkType: SSLCSdkType.TESTBOX,
                             store_id: "mobil5fe45035efe16",
                             store_passwd: "mobil5fe45035efe16@ssl",
-                            total_amount: widget.totalPrice + 100,
+                            total_amount: widget.totalPrice + 85,
                             tran_id: DateTime.now().millisecondsSinceEpoch.toString()));
 
                     try {
