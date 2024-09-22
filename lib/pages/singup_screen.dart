@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/Utils/constant.dart';
 import 'package:flutter_e_commerce_app/pages/signin_screen.dart';

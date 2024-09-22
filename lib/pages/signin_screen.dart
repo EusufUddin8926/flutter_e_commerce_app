@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_e_commerce_app/pages/singup_screen.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../Utils/colors.dart';
 import '../helpers/network_info.dart';

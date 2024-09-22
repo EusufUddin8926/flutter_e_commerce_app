@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,8 +10,6 @@ import '../animation/FadeAnimation.dart';
 import '../components/single_farmer_item.dart';
 import '../helpers/network_info.dart';
 import '../models/farmer_model.dart';
-import '../models/product.dart';
-import '../service/firestore_service.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({ Key? key }) : super(key: key);
@@ -36,7 +33,6 @@ class _ExplorePageState extends State<ExplorePage> with TickerProviderStateMixin
     const Color(0xFFFFC1D9),
   ];
 
-  int _selectedSize = 0;
   double selectedAmount = 1.0;
   late NetworkInfo _networkInfo;
   var selectedRange = const RangeValues(10.00, 1500.00);
