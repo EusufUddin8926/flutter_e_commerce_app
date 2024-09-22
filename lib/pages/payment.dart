@@ -12,7 +12,7 @@ import '../helpers/network_info.dart';
 import '../models/order_model.dart';
 import '../models/product.dart';
 import '../service/firestore_service.dart';
-import 'order_success.dart'; // Import the PaymentSuccess page
+import 'order_success.dart';
 
 class PaymentPage extends StatefulWidget {
   final List<Product> cartItems;
