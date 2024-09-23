@@ -4,7 +4,6 @@ import 'package:flutter_e_commerce_app/pages/signin_screen.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../Utils/colors.dart';
 import '../helpers/network_info.dart';
-import '../service/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
