@@ -17,14 +17,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   late NetworkInfo _networkInfo;
   String? _selectedRole; // Variable to hold the selected role
   final List<String> _roles = ['consumer', 'farmer'];
-  String? dropdownValue;
-  String? selectedValue;
-  String _selectedAddress = "";
+  String? _selectedAddress = "";
   bool _isPasswordVisible = false;
 
   @override
@@ -42,32 +39,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              colors: [
-                backgroundColor2,
-                backgroundColor2,
-                backgroundColor4,
-              ],
-            ),
+        body: SingleChildScrollView(
+      child: Container(
+        // Remove fixed height
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            colors: [
+              backgroundColor2,
+              backgroundColor2,
+              backgroundColor4,
+            ],
           ),
-          child: SafeArea(
-              child: Padding(
-            padding: const EdgeInsets.only(top: 48.0),
-            child: ListView(
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5.0),
+            child: Column(
               children: [
                 // Add logo here
                 Image.asset(
                   'assets/images/logo.png',
-                  height: 200, // Adjust the height as needed
-                  width: 200, // Adjust the width as needed
+                  height: 150,
+                  width: 150,
                 ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                 Text(
                   "রেজিস্ট্রেশন পেজ",
                   textAlign: TextAlign.center,
@@ -82,19 +78,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   "কৃষিতে আপনাকে স্বাগতম",
                   textAlign: TextAlign.center,
                   style:
-                      TextStyle(fontSize: 18, color: textColor2, height: 1.2),
+                      TextStyle(fontSize: 18, color: textColor2, height: 1.0),
                 ),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
 
+                // Role Dropdown
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: DropdownButtonFormField<String>(
                     value: _selectedRole,
                     hint: const Text('রোল সিলেক্ট করুন'),
-                    items: _roles.map((type) {
+                    items: _roles.map((role) {
                       return DropdownMenuItem(
-                        value: type,
-                        child: Text(type),
+                        value: role,
+                        child: Text(role),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -111,230 +108,191 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      children: [
-                        // Autocomplete Text Field
-                        Autocomplete<String>(
-                          optionsBuilder: (TextEditingValue textEditingValue) {
-                            if (textEditingValue.text.isEmpty) {
-                              return const Iterable<String>.empty();
-                            } else {
-                              return Constant.districtList.where((word) => word
-                                  .toLowerCase()
-                                  .contains(textEditingValue.text.toLowerCase()));
-                            }
-                          },
-                          onSelected: (selectedString) {
-                            setState(() {
-                              _selectedAddress = selectedString; // Always set the selected address
-                              addressController.clear();
-                            });
-                          },
-                          fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                            controller.text = "";
 
-                            return TextField(
-                              controller: controller,
-                              focusNode: focusNode,
-                              onEditingComplete: onEditingComplete,
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                hintText: "ঠিকানা খুঁজুন",
-                                prefixIcon: const Icon(Icons.search),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 4),
-                        // Chips Display
-                        Align(
-                          alignment: Alignment.topLeft,
-                          child: Wrap(
-                            spacing: 8.0,
-                            runSpacing: 4.0,
-                            children: _selectedAddress != ""
-                                ? [
-                              Chip(
-                                label: Text(_selectedAddress),
-                                onDeleted: () {
-                                  setState(() {
-                                    _selectedAddress = ""; // Clear the selected address
-                                  });
-                                },
-                              ),
-                            ]
-                                : [],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-                // for username and password
-                myTextField("ইমেইল দিন", Colors.white, emailController, false),
-                myTextField("পাসওয়ার্ড", Colors.black26, passwordController, true),
-                myTextField(
-                    "পুরো নাম দিন", Colors.white, fullNameController, false),
-                myTextField(
-                    "ফোন নাম্বার দিন", Colors.white, phoneNumberController, false),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.03,
-                ),
+                // Address Autocomplete with Chip
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      // for sign in button
-                      GestureDetector(
-                        onTap: () async{
-                          if(_selectedRole == null || _selectedRole!.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('রোল সিলেক্ট করুন!')));
-                            return;
+                      Autocomplete<String>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return const Iterable<String>.empty();
+                          } else {
+                            return Constant.districtList.where((word) => word
+                                .toLowerCase()
+                                .contains(textEditingValue.text.toLowerCase()));
                           }
-
-                          if(emailController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ইমেইল প্রয়োজন!')));
-                            return;
-                          }
-                          if(passwordController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('পাসওয়ার্ড প্রয়োজন!')));
-                            return;
-                          }
-                          if(fullNameController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('নাম প্রয়োজন!')));
-                            return;
-                          }
-                          if(_selectedAddress.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ঠিকানা প্রয়োজন। অনুগ্রহ করে ঠিকানা দিন!')));
-                            return;
-                          }
-                          if(phoneNumberController.text.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ফোন নাম্বার প্রয়োজন!')));
-                            return;
-                          }
-
-                          if(!await _networkInfo.isConnected){
-                            const snackbar = SnackBar(
-                              content: Text("ইন্টারনেট পাওয়া যাচ্ছে না!"),
-                              duration: Duration(seconds: 5),
-                            );
-
-                            ScaffoldMessenger.of(context).showSnackBar(snackbar);
-                            return;
-                          }
-
-                          AuthServices.signupUser(
-                              emailController.text.toString(),
-                              passwordController.text.toString(),
-                              fullNameController.text.toString(),
-                              _selectedAddress,
-                              phoneNumberController.text.toString(),
-                              _selectedRole!,
-                              "https://cdn-icons-png.flaticon.com/512/21/21104.png",
-                              context);
                         },
-                        child: Container(
-                          width: MediaQuery.of(context).size.width,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: buttonColor,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              "রেজিস্ট্রেশন",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 22,
+                        onSelected: (selectedString) {
+                          setState(() {
+                            _selectedAddress = selectedString;
+                          });
+                        },
+                        fieldViewBuilder: (context, controller, focusNode,
+                            onEditingComplete) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            onEditingComplete: onEditingComplete,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
+                              hintText: "ঠিকানা খুঁজুন",
+                              prefixIcon: const Icon(Icons.search),
                             ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.07),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const SignInScreen()));
+                          );
                         },
-                        child: Text.rich(
-                          TextSpan(
-                              text: "আগের একাউন্ট আছে? ",
-                              style: TextStyle(
-                                color: textColor2,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                              children: const [
-                                TextSpan(
-                                  text: "লগইন করুন",
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              ]),
-                        ),
                       ),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                      // const SizedBox(height: 2),
+                      // Display selected address with Chip
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: _selectedAddress!.isNotEmpty
+                            ? Chip(
+                                label: Text(_selectedAddress!),
+                                onDeleted: () {
+                                  setState(() {
+                                    _selectedAddress =
+                                        ""; // Clear the selected address
+                                  });
+                                },
+                              )
+                            : Container(),
+                      ),
                     ],
                   ),
                 ),
+
+                // Text fields for other inputs
+                myTextField("ইমেইল দিন", emailController, false),
+                myTextField("পাসওয়ার্ড", passwordController, true),
+                myTextField("পুরো নাম দিন", fullNameController, false),
+                myTextField("ফোন নাম্বার দিন", phoneNumberController, false),
+                const SizedBox(height: 15),
+                // Submit Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                  child: GestureDetector(
+                    onTap: _submitForm,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: buttonColor,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "রেজিস্ট্রেশন",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 22,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SignInScreen()));
+                  },
+                  child: Text.rich(
+                    TextSpan(
+                        text: "আগের একাউন্ট আছে? ",
+                        style: TextStyle(
+                          color: textColor2,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        children: const [
+                          TextSpan(
+                            text: "লগইন করুন",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        ]),
+                  ),
+                ),
+                // const SizedBox(height: 20),
               ],
             ),
-          )),
+          ),
+        ),
+      ),
+    ));
+  }
+
+  // Helper function to generate text fields
+  Widget myTextField(
+      String hint, TextEditingController controller, bool isPassword) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword && !_isPasswordVisible,
+        decoration: InputDecoration(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          fillColor: Colors.white,
+          filled: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          hintText: hint,
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off_outlined,
+                    color: Colors.black26,
+                  ),
+                  onPressed: _togglePasswordVisibility,
+                )
+              : null,
         ),
       ),
     );
   }
 
-  Container myTextField(String hint, Color color, TextEditingController controller, bool isPassword) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 24,
-        vertical: 8,
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword && !_isPasswordVisible,
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
-          fillColor: Colors.white,
-          filled: true,
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          hintText: hint,
-          hintStyle: const TextStyle(
-            color: Colors.black45,
-            fontSize: 19,
-          ),
-          suffixIcon: isPassword
-              ? IconButton(
-            icon: Icon(
-              _isPasswordVisible ? Icons.visibility : Icons.visibility_off_outlined,
-              color: color,
-            ),
-            onPressed: _togglePasswordVisibility,
-          )
-              : null,
-        ),
-      ),
-    );
+  // Form submission handler
+  Future<void> _submitForm() async {
+    if (_selectedRole == null || _selectedRole!.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('রোল সিলেক্ট করুন!')));
+      return;
+    }
+
+    if (emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('ইমেইল প্রয়োজন!')));
+      return;
+    }
+
+    if (passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('পাসওয়ার্ড প্রয়োজন!')));
+      return;
+    }
+
+    if (fullNameController.text.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('নাম প্রয়োজন!')));
+      return;
+    }
   }
 }
