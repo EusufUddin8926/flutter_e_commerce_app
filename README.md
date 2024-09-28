@@ -14,9 +14,6 @@ An elegant Ecommerce app built using **Flutter** that leverages **Firestore** to
 
 ## Screenshots
 
-| ![login_screen](https://github.com/user-attachments/assets/32410e27-bd40-46ae-9b65-f1c0fa151fa3) | ![note_screen](https://github.com/user-attachments/assets/f83df247-ecce-4703-a1e4-960deefa40f6) |
-| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| ![add_screen](https://github.com/user-attachments/assets/9f725f87-f149-43e9-b5ef-9f87dc340be9)    | ![update_screen](https://github.com/user-attachments/assets/04f004f3-4737-404c-97ac-e916f83f51d9) |
 
 | ![dashboard](https://github.com/user-attachments/assets/02a685d3-229d-495a-9c5e-114efa4a6ef8)      | ![product_description](https://github.com/user-attachments/assets/49eb52d0-7cb7-47f6-8ecd-eacbca2a8067) |
 | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
